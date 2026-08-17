@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const allCb = document.createElement('input');
         allCb.type = 'checkbox';
         allCb.value = '全員';
-        allCb.checked = false; // 初期状態を未選択に
+        allCb.checked = false;
         allCb.style.display = 'none';
         allLabel.appendChild(allCb);
         allLabel.appendChild(document.createTextNode('全員'));
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cb.type = 'checkbox';
             cb.value = name;
             cb.className = 'target-member';
-            cb.checked = false; // 初期状態を未選択に
+            cb.checked = false;
             cb.style.display = 'none';
             lbl.appendChild(cb);
             lbl.appendChild(document.createTextNode(name));
@@ -186,16 +186,27 @@ function renderExpenseList() {
         
         const payer = row['支払者'] || '';
         const targetStr = row['対象者'] || row['誰の分？'] || '全員';
-        const contentStr = row['支払内容'] || '';
+        
+        // スプレッドシートの「支払い内容」列に対応
+        const contentStr = row['支払い内容'] || row['支払内容'] || '';
         const id = row['ID'] || '';
         
         let icon = "💴";
         let displayContent = contentStr;
-        if (contentStr.includes('[食費]')) { icon = "🍔"; displayContent = contentStr.replace('[食費]', '').trim(); }
-        else if (contentStr.includes('[交通費]')) { icon = "🚃"; displayContent = contentStr.replace('[交通費]', '').trim(); }
-        else if (contentStr.includes('[宿泊費]')) { icon = "🏨"; displayContent = contentStr.replace('[宿泊費]', '').trim(); }
-        else if (contentStr.includes('[観光費]')) { icon = "🎟️"; displayContent = contentStr.replace('[観光費]', '').trim(); }
-        else if (contentStr.includes('[その他]')) { icon = "📦"; displayContent = contentStr.replace('[その他]', '').trim(); }
+        
+        // カテゴリと詳細をきれいにタグ付けして表示する
+        const match = contentStr.match(/^\[(.*?)\]\s*(.*)$/);
+        if (match) {
+            const cat = match[1];
+            const det = match[2];
+            if (cat === '食費') icon = "🍔";
+            else if (cat === '交通費') icon = "🚃";
+            else if (cat === '宿泊費') icon = "🏨";
+            else if (cat === '観光費') icon = "🎟️";
+            else if (cat === 'その他') icon = "📦";
+            
+            displayContent = `<span style="font-size: 0.8em; background-color: #e6f7ff; color: #0056b3; border: 1px solid #99c2ff; border-radius: 4px; padding: 2px 6px; margin-right: 6px;">${cat}</span>${det}`;
+        }
 
         totalAmount += itemJPY;
         
@@ -225,9 +236,9 @@ function renderExpenseList() {
             <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; align-items: center; position: relative;">
                 <div style="font-size: 1.5em; line-height: 1.2; padding-right: 10px;">${icon}</div>
                 <div style="flex: 1; padding-right: 10px;">
-                    <div style="font-size: 0.85em; color: #666;">${dateStr}</div>
-                    <div style="font-weight: bold; margin: 3px 0;">${displayContent}</div>
-                    <div style="font-size: 0.85em; color: #555; background-color: #f8f9fa; display: inline-block; padding: 2px 6px; border-radius: 4px;">
+                    <div style="font-size: 0.85em; color: #666; margin-bottom: 3px;">${dateStr}</div>
+                    <div style="font-weight: bold; margin: 4px 0;">${displayContent}</div>
+                    <div style="font-size: 0.85em; color: #555; background-color: #f8f9fa; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 3px;">
                         支払: ${payer} ➔ 対象: ${targetDisplay}
                     </div>
                 </div>
@@ -372,7 +383,7 @@ document.getElementById('expense-form').addEventListener('submit', function(e) {
     const newItem = {
         'ID': newId,
         '日付': inputDate,
-        '支払内容': fullContent,
+        '支払い内容': fullContent, 
         '金額': itemJPY,
         '支払者': payer,
         '対象者': targetStr, 
