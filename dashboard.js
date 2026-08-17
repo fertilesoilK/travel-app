@@ -12,19 +12,12 @@ function renderDashboard() {
     const myName = APP_CONFIG.mySelf;
 
     if (!myName) {
-        alert('To use the dashboard, please set your name in the settings.');
+        alert('分析機能を使用するには、設定タブで「自分の名前」を登録してください。');
         return;
     }
 
-    const catMap = {
-        '食費': 'Food',
-        '交通費': 'Transport',
-        '宿泊費': 'Accommodation',
-        '観光費': 'Sightseeing',
-        'その他': 'Others'
-    };
-
-    const budgetCatTotals = { 'Food': 0, 'Transport': 0, 'Accommodation': 0, 'Sightseeing': 0, 'Others': 0 };
+    const categories = ['食費', '交通費', '宿泊費', '観光費', 'その他'];
+    const budgetCatTotals = { '食費': 0, '交通費': 0, '宿泊費': 0, '観光費': 0, 'その他': 0 };
     let totalBudget = 0;
 
     if (typeof budgetData !== 'undefined') {
@@ -44,12 +37,15 @@ function renderDashboard() {
             totalBudget += jpyAmount;
 
             const catJP = row['カテゴリ'] || 'その他';
-            const catEN = catMap[catJP] || 'Others';
-            budgetCatTotals[catEN] += jpyAmount;
+            if (budgetCatTotals[catJP] !== undefined) {
+                budgetCatTotals[catJP] += jpyAmount;
+            } else {
+                budgetCatTotals['その他'] += jpyAmount;
+            }
         });
     }
 
-    const expenseCatTotals = { 'Food': 0, 'Transport': 0, 'Accommodation': 0, 'Sightseeing': 0, 'Others': 0 };
+    const expenseCatTotals = { '食費': 0, '交通費': 0, '宿泊費': 0, '観光費': 0, 'その他': 0 };
     let totalExpense = 0;
     
     if (typeof expenseData !== 'undefined') {
@@ -77,27 +73,26 @@ function renderDashboard() {
                 const contentStr = row['支払い内容'] || row['支払内容'] || '';
                 const match = contentStr.match(/^\[(.*?)\]/);
                 let catJP = 'その他';
-                if (match && catMap[match[1]] !== undefined) {
+                if (match && expenseCatTotals[match[1]] !== undefined) {
                     catJP = match[1];
                 }
-                expenseCatTotals[catMap[catJP] || 'Others'] += myShare;
+                expenseCatTotals[catJP] += myShare;
             }
         });
     }
 
     Chart.defaults.font.family = 'Ariel';
-    Chart.defaults.font.size = 18;
+    Chart.defaults.font.size = 14; 
 
     const maxVal = Math.max(totalBudget, totalExpense);
     const axisMax = Math.ceil((maxVal || 1) * 1.2);
 
-    const categories = ['Food', 'Transport', 'Accommodation', 'Sightseeing', 'Others'];
     const colors = {
-        'Food': '#ffc107',
-        'Transport': '#17a2b8',
-        'Accommodation': '#6f42c1',
-        'Sightseeing': '#fd7e14',
-        'Others': '#6c757d'
+        '食費': '#ffc107',
+        '交通費': '#17a2b8',
+        '宿泊費': '#6f42c1',
+        '観光費': '#fd7e14',
+        'その他': '#6c757d'
     };
 
     const barDatasets = categories.map(cat => {
@@ -114,7 +109,7 @@ function renderDashboard() {
     budgetChartInstance = new Chart(ctxBudget, {
         type: 'bar',
         data: {
-            labels: ['Budget', 'Expense'],
+            labels: ['予算', '支出'],
             datasets: barDatasets
         },
         options: {
@@ -133,7 +128,7 @@ function renderDashboard() {
                     max: axisMax,
                     grid: { display: false },
                     border: { display: true, color: 'grey', width: 2 },
-                    ticks: { display: true, color: 'black', minor: { display: true } }
+                    ticks: { display: true, color: 'black' }
                 },
                 xTop: {
                     type: 'linear',
@@ -143,23 +138,23 @@ function renderDashboard() {
                     max: axisMax,
                     grid: { display: false },
                     border: { display: true, color: 'grey', width: 2 },
-                    ticks: { display: true, color: 'black', minor: { display: true } }
+                    ticks: { display: true, color: 'black' }
                 },
                 y: {
                     stacked: true,
                     position: 'left',
                     grid: { display: false },
                     border: { display: true, color: 'grey', width: 2 },
-                    ticks: { display: true, color: 'black', minor: { display: true } }
+                    ticks: { display: true, color: 'black' }
                 },
                 yRight: {
                     type: 'category',
-                    labels: ['Budget', 'Expense'],
+                    labels: ['予算', '支出'],
                     stacked: true,
                     position: 'right',
                     grid: { display: false },
                     border: { display: true, color: 'grey', width: 2 },
-                    ticks: { display: true, color: 'black', minor: { display: true } }
+                    ticks: { display: true, color: 'black' }
                 }
             }
         }
@@ -168,12 +163,10 @@ function renderDashboard() {
     const ctxCategory = document.getElementById('categoryChart').getContext('2d');
     if (categoryChartInstance) categoryChartInstance.destroy();
 
-    const pieLabels = [];
     const pieData = [];
     const pieColors = [];
 
     categories.forEach(cat => {
-        pieLabels.push(cat);
         pieData.push(expenseCatTotals[cat]);
         pieColors.push(colors[cat]);
     });
@@ -181,9 +174,9 @@ function renderDashboard() {
     categoryChartInstance = new Chart(ctxCategory, {
         type: 'bar',
         data: {
-            labels: pieLabels,
+            labels: categories,
             datasets: [{
-                label: 'Expense Amount',
+                label: '支出額',
                 data: pieData,
                 backgroundColor: pieColors
             }]
@@ -200,34 +193,78 @@ function renderDashboard() {
                     position: 'bottom',
                     grid: { display: false },
                     border: { display: true, color: 'grey', width: 2 },
-                    ticks: { display: true, color: 'black', minor: { display: true } }
+                    ticks: { display: true, color: 'black' }
                 },
                 xTop: {
                     type: 'category',
-                    labels: pieLabels,
+                    labels: categories,
                     position: 'top',
                     grid: { display: false },
                     border: { display: true, color: 'grey', width: 2 },
-                    ticks: { display: true, color: 'black', minor: { display: true } }
+                    ticks: { display: true, color: 'black' }
                 },
                 y: {
                     position: 'left',
                     grid: { display: false },
                     border: { display: true, color: 'grey', width: 2 },
-                    ticks: { display: true, color: 'black', minor: { display: true } }
+                    ticks: { display: true, color: 'black' }
                 },
                 yRight: {
                     type: 'linear',
                     position: 'right',
                     grid: { display: false },
                     border: { display: true, color: 'grey', width: 2 },
-                    ticks: { display: true, color: 'black', minor: { display: true } }
+                    ticks: { display: true, color: 'black' }
                 }
             }
         }
     });
 
-    let remain = totalBudget - totalExpense;
-    let remainText = remain >= 0 ? `Remaining: ¥${remain.toLocaleString()}` : `Over: ¥${(-remain).toLocaleString()}`;
-    document.getElementById('dashboard-budget-text').innerText = `Total Budget: ¥${totalBudget.toLocaleString()} / Total Expense: ¥${totalExpense.toLocaleString()} (${remainText})`;
+    let tableHtml = `
+    <div style="overflow-x: auto; margin-top: 15px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9em; text-align: right;">
+            <thead>
+                <tr style="background-color: #0056b3; color: white;">
+                    <th style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">カテゴリ</th>
+                    <th style="padding: 8px; border: 1px solid #dee2e6;">予算 (円)</th>
+                    <th style="padding: 8px; border: 1px solid #dee2e6;">支出 (円)</th>
+                    <th style="padding: 8px; border: 1px solid #dee2e6;">残額 (円)</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    categories.forEach(cat => {
+        const b = budgetCatTotals[cat];
+        const e = expenseCatTotals[cat];
+        const diff = b - e;
+        const diffColor = diff < 0 ? 'color: #dc3545; font-weight: bold;' : 'color: #28a745;';
+        tableHtml += `
+            <tr>
+                <td style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">${cat}</td>
+                <td style="padding: 8px; border: 1px solid #dee2e6;">${b.toLocaleString()}</td>
+                <td style="padding: 8px; border: 1px solid #dee2e6;">${e.toLocaleString()}</td>
+                <td style="padding: 8px; border: 1px solid #dee2e6; ${diffColor}">${diff.toLocaleString()}</td>
+            </tr>
+        `;
+    });
+
+    const totalDiff = totalBudget - totalExpense;
+    const totalDiffColor = totalDiff < 0 ? 'color: #dc3545; font-weight: bold;' : 'color: #28a745; font-weight: bold;';
+    
+    tableHtml += `
+            </tbody>
+            <tfoot>
+                <tr style="background-color: #f8f9fa; font-weight: bold;">
+                    <td style="padding: 8px; border: 1px solid #dee2e6; text-align: left;">合計</td>
+                    <td style="padding: 8px; border: 1px solid #dee2e6;">${totalBudget.toLocaleString()}</td>
+                    <td style="padding: 8px; border: 1px solid #dee2e6;">${totalExpense.toLocaleString()}</td>
+                    <td style="padding: 8px; border: 1px solid #dee2e6; ${totalDiffColor}">${totalDiff.toLocaleString()}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    `;
+
+    document.getElementById('dashboard-table-container').innerHTML = tableHtml;
 }
