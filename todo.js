@@ -14,6 +14,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    const todoType = document.getElementById('todo-type');
+    const todoCategoryArea = document.getElementById('todo-category-area');
+    if (todoType && todoCategoryArea) {
+        todoType.addEventListener('change', (e) => {
+            if (e.target.value === '持ち物') {
+                todoCategoryArea.style.display = 'block';
+            } else {
+                todoCategoryArea.style.display = 'none';
+            }
+        });
+    }
 });
 
 async function loadTodo(forceFetch = false) {
@@ -68,43 +80,81 @@ function renderTodoList() {
         let catHtml = `<div style="margin-bottom: 25px;">
             <h3 style="border-bottom: 2px solid ${cat.color}; padding-bottom: 5px; color: ${cat.color}; margin-bottom: 10px; font-size: 1.1em;">${cat.icon} ${cat.key}</h3>`;
 
-        items.forEach(row => {
-            const id = row['ID'];
-            const content = row['内容'];
-            const doneData = row['チェック済メンバー'] || '';
-            
-            let isChecked = false;
-            let statusText = '';
+        if (cat.key === '持ち物') {
+            const subCats = ['貴重品', '衣類', '衛生・身だしなみ品', '電子機器類', '飲食物', 'その他'];
+            const subCatItems = {};
+            subCats.forEach(sc => subCatItems[sc] = []);
+            const otherItems = [];
 
-            if (cat.key === '共有ToDo') {
-                isChecked = (doneData === 'done');
-                statusText = isChecked ? '<span style="font-size:0.75em; color:#28a745; margin-left:8px;">(完了)</span>' : '';
-            } else {
-                const doneMembers = doneData ? doneData.split(',') : [];
-                isChecked = APP_CONFIG.mySelf ? doneMembers.includes(APP_CONFIG.mySelf) : false;
-                
-                if (doneMembers.length > 0) {
-                    statusText = `<div style="font-size: 0.7em; color: #888; margin-top: 2px;">完了済: ${doneMembers.join(', ')}</div>`;
+            items.forEach(row => {
+                const match = row['内容'].match(/^\[(.*?)\]\s*(.*)$/);
+                if (match && subCats.includes(match[1])) {
+                    subCatItems[match[1]].push({ ...row, parsedContent: match[2] });
+                } else {
+                    otherItems.push({ ...row, parsedContent: row['内容'] });
                 }
-            }
+            });
 
-            catHtml += `
-                <div style="display: flex; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid #eee;">
-                    <input type="checkbox" onchange="toggleTodo('${id}')" ${isChecked ? 'checked' : ''} style="transform: scale(1.5); margin-top: 4px; margin-right: 15px; cursor: pointer;">
-                    <div style="flex: 1;">
-                        <div style="${isChecked ? 'text-decoration: line-through; color: #999;' : ''}; font-size: 1.05em; font-weight: bold; cursor: pointer;" onclick="toggleTodo('${id}')">${content} ${statusText}</div>
-                        ${cat.key !== '共有ToDo' ? statusText : ''}
-                    </div>
-                    <button onclick="deleteTodo('${id}')" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1.2em; padding: 5px;">🗑️</button>
-                </div>
-            `;
-        });
+            subCats.forEach(sc => {
+                if (subCatItems[sc].length > 0) {
+                    catHtml += `<h4 style="margin: 15px 0 5px 0; font-size: 0.95em; color: #555; border-left: 4px solid #198754; padding-left: 8px;">${sc}</h4>`;
+                    subCatItems[sc].forEach(row => {
+                        catHtml += buildTodoRow(row, cat.key);
+                    });
+                }
+            });
+            if (otherItems.length > 0) {
+                if (items.length !== otherItems.length) {
+                    catHtml += `<h4 style="margin: 15px 0 5px 0; font-size: 0.95em; color: #555; border-left: 4px solid #198754; padding-left: 8px;">分類なし</h4>`;
+                }
+                otherItems.forEach(row => {
+                    catHtml += buildTodoRow(row, cat.key);
+                });
+            }
+        } else {
+            items.forEach(row => {
+                row.parsedContent = row['内容'];
+                catHtml += buildTodoRow(row, cat.key);
+            });
+        }
 
         catHtml += `</div>`;
         html += catHtml;
     });
 
     listDiv.innerHTML = html;
+}
+
+function buildTodoRow(row, typeKey) {
+    const id = row['ID'];
+    const content = row.parsedContent;
+    const doneData = row['チェック済メンバー'] || '';
+    
+    let isChecked = false;
+    let statusText = '';
+
+    if (typeKey === '共有ToDo') {
+        isChecked = (doneData === 'done');
+        statusText = isChecked ? '<span style="font-size:0.75em; color:#28a745; margin-left:8px;">(完了)</span>' : '';
+    } else {
+        const doneMembers = doneData ? doneData.split(',') : [];
+        isChecked = APP_CONFIG.mySelf ? doneMembers.includes(APP_CONFIG.mySelf) : false;
+        
+        if (doneMembers.length > 0) {
+            statusText = `<div style="font-size: 0.7em; color: #888; margin-top: 2px;">完了済: ${doneMembers.join(', ')}</div>`;
+        }
+    }
+
+    return `
+        <div style="display: flex; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid #eee;">
+            <input type="checkbox" onchange="toggleTodo('${id}')" ${isChecked ? 'checked' : ''} style="transform: scale(1.5); margin-top: 4px; margin-right: 15px; cursor: pointer;">
+            <div style="flex: 1;">
+                <div style="${isChecked ? 'text-decoration: line-through; color: #999;' : ''}; font-size: 1.05em; font-weight: bold; cursor: pointer;" onclick="toggleTodo('${id}')">${content} ${statusText}</div>
+                ${typeKey !== '共有ToDo' ? statusText : ''}
+            </div>
+            <button onclick="deleteTodo('${id}')" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1.2em; padding: 5px;">🗑️</button>
+        </div>
+    `;
 }
 
 window.toggleTodo = function(id) {
@@ -118,7 +168,7 @@ window.toggleTodo = function(id) {
         const myName = APP_CONFIG.mySelf;
         if (!myName) {
             alert('チェック機能を使用するには、設定タブで「自分の名前」を登録してください。');
-            renderTodoList(); // チェック状態を元に戻すために再描画
+            renderTodoList(); 
             return;
         }
         let doneMembers = target['チェック済メンバー'] ? target['チェック済メンバー'].split(',') : [];
@@ -177,7 +227,13 @@ if (tForm) {
         btn.disabled = true;
 
         const type = document.getElementById('todo-type').value;
-        const content = document.getElementById('todo-content').value.trim();
+        let content = document.getElementById('todo-content').value.trim();
+        
+        if (type === '持ち物') {
+            const category = document.getElementById('todo-category').value;
+            content = `[${category}] ${content}`;
+        }
+        
         const newId = 'todo_' + new Date().getTime();
         
         const newItem = {
@@ -192,6 +248,11 @@ if (tForm) {
         renderTodoList();
 
         document.getElementById('todo-form').reset();
+        
+        const categoryArea = document.getElementById('todo-category-area');
+        if (categoryArea) {
+            categoryArea.style.display = 'none';
+        }
         
         if (window.innerWidth <= 767) {
             document.getElementById('todo-form-wrapper').style.display = 'none';
