@@ -97,6 +97,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    const toggleBtn = document.getElementById('toggle-exp-form');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            const wrapper = document.getElementById('exp-form-wrapper');
+            if (wrapper.style.display === 'none' || wrapper.style.display === '') {
+                wrapper.style.display = 'block';
+                toggleBtn.innerText = '－ 入力フォームを閉じる';
+            } else {
+                wrapper.style.display = 'none';
+                toggleBtn.innerText = '＋ 支出を追加';
+            }
+        });
+    }
 });
 
 async function loadExpenses() {
@@ -221,7 +235,6 @@ function renderExpenseList() {
         let icon = "💴";
         let displayContent = contentStr;
         
-        // 過去の [カテゴリ] 詳細 フォーマットにも対応
         const match = contentStr.match(/^\[(.*?)\]\s*(.*)$/);
         if (match) {
             const cat = match[1];
@@ -358,8 +371,10 @@ if (eForm) {
         const inputDate = document.getElementById('exp-date').value;
         localStorage.setItem('lastExpDate', inputDate);
 
-        // カテゴリと詳細の代わりに、用途の入力を取得
-        const fullContent = document.getElementById('exp-purpose').value.trim();
+        // カテゴリと詳細を組み合わせて保存するように復旧
+        const category = document.getElementById('exp-category').value;
+        const detail = document.getElementById('exp-detail').value.trim();
+        const fullContent = `[${category}] ${detail}`;
         
         const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
         const currency = document.getElementById('exp-currency').value;
@@ -407,7 +422,6 @@ if (eForm) {
         document.getElementById('expense-form').reset();
         document.getElementById('exp-date').value = localStorage.getItem('lastExpDate');
         
-        // 自分の名前が設定されていれば初期値としてリセット時に再セット
         const payerSelect = document.getElementById('exp-payer');
         if (payerSelect && APP_CONFIG.mySelf) {
             payerSelect.value = APP_CONFIG.mySelf;
@@ -419,6 +433,11 @@ if (eForm) {
             allCb.dispatchEvent(new Event('change'));
         }
         
+        if (window.innerWidth <= 767) {
+            document.getElementById('exp-form-wrapper').style.display = 'none';
+            const tBtn = document.getElementById('toggle-exp-form');
+            if (tBtn) tBtn.innerText = '＋ 支出を追加';
+        }
         btn.disabled = false;
 
         const rowData = [

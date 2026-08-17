@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>旅行管理アプリ</title>
     <link rel="stylesheet" href="style.css">
+    <!-- グラフ描画用ライブラリ Chart.js の読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -174,9 +176,22 @@
                                 <input type="date" id="exp-date" required style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #f8f9fa;">
                             </div>
                             
-                            <div style="margin-bottom: 10px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">用途</label>
-                                <input type="text" id="exp-purpose" required placeholder="例：ランチ、タクシー代など" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                            <!-- 用途入力から、カテゴリと詳細の入力に復元 -->
+                            <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">カテゴリ</label>
+                                    <select id="exp-category" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                        <option value="食費">🍔 食費</option>
+                                        <option value="交通費">🚃 交通費</option>
+                                        <option value="宿泊費">🏨 宿泊費</option>
+                                        <option value="観光費">🎟️ 観光費</option>
+                                        <option value="その他">📦 その他</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">詳細</label>
+                                    <input type="text" id="exp-detail" required placeholder="例：ランチ" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                </div>
                             </div>
 
                             <div style="margin-bottom: 10px; display: flex; gap: 10px;">
@@ -288,6 +303,26 @@
         </div>
     </div>
 
+    <!-- グラフ・分析画面 -->
+    <div id="tab-dashboard" class="content-area">
+        <div class="card" style="text-align: center;">
+            <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                予算と支出のバランス
+                <button onclick="renderDashboard()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">更新</button>
+            </h2>
+            <div style="position: relative; height: 150px; width: 100%; margin-bottom: 20px;">
+                <canvas id="budgetChart"></canvas>
+            </div>
+            <div id="dashboard-budget-text" style="font-size: 0.9em; font-weight: bold; color: #333; margin-bottom: 10px;"></div>
+        </div>
+        <div class="card" style="text-align: center;">
+            <h2>カテゴリ別 支出割合</h2>
+            <div style="position: relative; height: 250px; width: 100%;">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+    </div>
+
     <!-- 設定画面 -->
     <div id="tab-settings" class="content-area">
         <div class="card">
@@ -386,13 +421,17 @@
         <div class="nav-item" onclick="switchTab('budget', '予算')">💰 予算</div>
         <div class="nav-item" onclick="switchTab('expense', '支出')">💴 支出</div>
         <div class="nav-item" onclick="switchTab('todo', '準備')">✅ 準備</div>
+        <!-- グラフ描画関数を呼び出す分析タブ -->
+        <div class="nav-item" onclick="switchTab('dashboard', '分析'); renderDashboard();">📊 分析</div>
         <div class="nav-item" onclick="switchTab('settings', '設定')">⚙️ 設定</div>
     </div>
 
-    <script src="main.js?v=2"></script>
-    <script src="schedule.js?v=2"></script>
-    <script src="budget.js?v=2"></script>
-    <script src="expense.js?v=2"></script>
-    <script src="todo.js?v=2"></script>
+    <!-- バージョンパラメータを更新して確実な読み込みを保証 -->
+    <script src="main.js?v=3"></script>
+    <script src="schedule.js?v=3"></script>
+    <script src="budget.js?v=3"></script>
+    <script src="expense.js?v=3"></script>
+    <script src="todo.js?v=3"></script>
+    <script src="dashboard.js?v=3"></script>
 </body>
 </html>
