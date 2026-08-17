@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>旅行管理アプリ</title>
     <link rel="stylesheet" href="style.css">
+    <!-- PWA化のための設定を追記 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0056b3">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
     <!-- グラフ描画用ライブラリ Chart.js の読み込み -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -420,17 +425,30 @@
         <div class="nav-item" onclick="switchTab('budget', '予算')">💰 予算</div>
         <div class="nav-item" onclick="switchTab('expense', '支出')">💴 支出</div>
         <div class="nav-item" onclick="switchTab('todo', '準備')">✅ 準備</div>
-        <!-- グラフ描画関数を呼び出す分析タブ -->
         <div class="nav-item" onclick="switchTab('dashboard', '分析'); renderDashboard();">📊 分析</div>
         <div class="nav-item" onclick="switchTab('settings', '設定')">⚙️ 設定</div>
     </div>
 
-    <!-- バージョンパラメータを更新して確実な読み込みを保証 -->
-    <script src="main.js?v=5"></script>
-    <script src="schedule.js?v=5"></script>
-    <script src="budget.js?v=5"></script>
-    <script src="expense.js?v=5"></script>
-    <script src="todo.js?v=5"></script>
-    <script src="dashboard.js?v=5"></script>
+    <script src="main.js?v=6"></script>
+    <script src="schedule.js?v=6"></script>
+    <script src="budget.js?v=6"></script>
+    <script src="expense.js?v=6"></script>
+    <script src="todo.js?v=6"></script>
+    <script src="dashboard.js?v=6"></script>
+
+    <!-- サービスワーカーの登録 -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registered:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
