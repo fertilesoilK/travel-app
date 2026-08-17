@@ -1,6 +1,7 @@
 let parsedConfig = JSON.parse(localStorage.getItem('trip_app_config')) || {};
 let APP_CONFIG = {
     gasUrl: parsedConfig.gasUrl || "",
+    tripTitle: parsedConfig.tripTitle || "",
     defaultYear: parsedConfig.defaultYear || new Date().getFullYear(),
     month1: parsedConfig.month1 || new Date().getMonth() + 1,
     month2: parsedConfig.month2 || "",
@@ -21,8 +22,12 @@ function switchTab(tabId, title) {
     navItems.forEach(item => item.classList.remove('active'));
 
     document.getElementById('tab-' + tabId).classList.add('active');
-    event.currentTarget.classList.add('active');
-    document.getElementById('app-header').innerText = title;
+    
+    const activeNav = document.querySelector(`.nav-item[onclick*="${tabId}"]`);
+    if (activeNav) activeNav.classList.add('active');
+
+    const headerTitle = APP_CONFIG.tripTitle ? APP_CONFIG.tripTitle + ' - ' + title : title;
+    document.getElementById('app-header').innerText = headerTitle;
 }
 
 const membersContainer = document.getElementById('member-inputs-container');
@@ -42,7 +47,6 @@ function createMemberInput(value = "") {
     input.style.flex = '1';
     input.style.padding = '8px';
     input.style.boxSizing = 'border-box';
-    input.required = true;
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -78,7 +82,6 @@ function createCityInput(value = "") {
     input.style.flex = '1';
     input.style.padding = '8px';
     input.style.boxSizing = 'border-box';
-    input.required = true;
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -153,6 +156,7 @@ if (settingsForm) {
     settingsForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        const tripTitle = document.getElementById('set-trip-title').value.trim();
         const url = document.getElementById('set-url').value;
         const year = document.getElementById('set-year').value;
         const m1 = document.getElementById('set-month1').value;
@@ -185,6 +189,7 @@ if (settingsForm) {
         
         APP_CONFIG = {
             gasUrl: url,
+            tripTitle: tripTitle,
             defaultYear: parseInt(year),
             month1: parseInt(m1),
             month2: m2 ? parseInt(m2) : "",
@@ -207,6 +212,7 @@ const btnShareSettings = document.getElementById('btn-share-settings');
 if (btnShareSettings) {
     btnShareSettings.addEventListener('click', () => {
         const shareUrl = new URL(window.location.href);
+        shareUrl.searchParams.set('setup_title', APP_CONFIG.tripTitle);
         shareUrl.searchParams.set('setup_gas', APP_CONFIG.gasUrl);
         shareUrl.searchParams.set('setup_year', APP_CONFIG.defaultYear);
         shareUrl.searchParams.set('setup_m1', APP_CONFIG.month1);
@@ -233,6 +239,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (params.has('setup_gas') && params.has('setup_year') && params.has('setup_m1') && params.has('setup_members')) {
         APP_CONFIG = {
             gasUrl: params.get('setup_gas'),
+            tripTitle: params.has('setup_title') ? params.get('setup_title') : "",
             defaultYear: parseInt(params.get('setup_year')),
             month1: parseInt(params.get('setup_m1')),
             month2: params.get('setup_m2') ? parseInt(params.get('setup_m2')) : "",
@@ -279,6 +286,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    document.getElementById('set-trip-title').value = APP_CONFIG.tripTitle || "";
     const setUrlEl = document.getElementById('set-url');
     if (setUrlEl) setUrlEl.value = APP_CONFIG.gasUrl || "";
     
@@ -319,6 +327,9 @@ window.addEventListener('DOMContentLoaded', () => {
         
         if (typeof loadSchedule === 'function') loadSchedule();
         if (typeof loadExpenses === 'function') loadExpenses();
+        
+        const headerTitle = APP_CONFIG.tripTitle ? APP_CONFIG.tripTitle + ' - 旅程' : '旅程';
+        document.getElementById('app-header').innerText = headerTitle;
     } else {
         switchTab('settings', '設定');
     }

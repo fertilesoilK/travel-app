@@ -174,7 +174,8 @@ function renderExpenseList() {
         }
         
         const payer = row['支払者'] || '';
-        const targetStr = row['誰の分？'] || '全員';
+        // 画像のヘッダー名「対象者」に対応し、旧データのために「誰の分？」もフォールバックとして残す
+        const targetStr = row['対象者'] || row['誰の分？'] || '全員';
         const contentStr = row['支払内容'] || '';
         const id = row['ID'] || '';
         
@@ -315,7 +316,7 @@ document.getElementById('expense-form').addEventListener('submit', function(e) {
 
     const checkboxes = document.querySelectorAll('.target-member:checked');
     if (checkboxes.length === 0) {
-        alert("「誰の分？」を少なくとも1人選択してください．");
+        alert("「対象者」を少なくとも1人選択してください．");
         return;
     }
 
@@ -363,7 +364,7 @@ document.getElementById('expense-form').addEventListener('submit', function(e) {
         '支払内容': fullContent,
         '金額': itemJPY,
         '支払者': payer,
-        '誰の分？': targetStr,
+        '対象者': targetStr, 
         '通貨': currency,
         '外貨金額': amount
     };
@@ -386,6 +387,7 @@ document.getElementById('expense-form').addEventListener('submit', function(e) {
     }
     btn.disabled = false;
 
+    // 「対象者」として保存する
     const rowData = [
         newId,
         inputDate,
