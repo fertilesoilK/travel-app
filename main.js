@@ -204,7 +204,6 @@ if (settingsForm) {
         
         localStorage.setItem('trip_app_config', JSON.stringify(APP_CONFIG));
         
-        // 設定を変更した際はキャッシュを破棄する
         localStorage.removeItem('cache_schedule');
         localStorage.removeItem('cache_budget');
         localStorage.removeItem('cache_expense');
@@ -240,6 +239,88 @@ if (btnShareSettings) {
     });
 }
 
+// --- オフライン自動同期システム ---
+window.syncQueue = JSON.parse(localStorage.getItem('offline_sync_queue')) || [];
+
+window.updateSyncBadge = function() {
+    const badge = document.getElementById('sync-badge');
+    if (badge) {
+        if (window.syncQueue.length > 0) {
+            badge.style.display = 'inline-block';
+            badge.style.backgroundColor = '#ffc107';
+            badge.style.color = '#000';
+            badge.innerText = `未送信: ${window.syncQueue.length}件`;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+};
+
+window.enqueueSync = function(payload) {
+    window.syncQueue.push(payload);
+    localStorage.setItem('offline_sync_queue', JSON.stringify(window.syncQueue));
+    window.updateSyncBadge();
+};
+
+window.processSyncQueue = async function() {
+    if (!navigator.onLine || window.syncQueue.length === 0) return;
+    
+    const badge = document.getElementById('sync-badge');
+    if (badge) {
+        badge.style.display = 'inline-block';
+        badge.style.backgroundColor = '#17a2b8';
+        badge.style.color = '#fff';
+        badge.innerText = '同期中...';
+    }
+
+    const queueCopy = [...window.syncQueue];
+    window.syncQueue = []; 
+    localStorage.setItem('offline_sync_queue', JSON.stringify(window.syncQueue));
+
+    let hasError = false;
+
+    for (const payload of queueCopy) {
+        try {
+            await fetch(APP_CONFIG.gasUrl, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+        } catch (e) {
+            window.syncQueue.push(payload);
+            hasError = true;
+        }
+    }
+    
+    localStorage.setItem('offline_sync_queue', JSON.stringify(window.syncQueue));
+    window.updateSyncBadge();
+    
+    if (!hasError && badge) {
+        badge.style.backgroundColor = '#28a745';
+        badge.innerText = '同期完了!';
+        setTimeout(() => window.updateSyncBadge(), 2500);
+    }
+};
+
+window.safeFetch = function(payload) {
+    if (!APP_CONFIG.gasUrl) return;
+    
+    if (navigator.onLine) {
+        fetch(APP_CONFIG.gasUrl, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        }).catch(() => {
+            window.enqueueSync(payload);
+        });
+    } else {
+        window.enqueueSync(payload);
+    }
+};
+
+window.addEventListener('online', () => {
+    window.processSyncQueue();
+});
+// ----------------------------------
+
 window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('setup_gas') && params.has('setup_year') && params.has('setup_m1') && params.has('setup_members')) {
@@ -259,7 +340,6 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         localStorage.setItem('trip_app_config', JSON.stringify(APP_CONFIG));
         
-        // 共有URLで設定を上書きした際はキャッシュを破棄する
         localStorage.removeItem('cache_schedule');
         localStorage.removeItem('cache_budget');
         localStorage.removeItem('cache_expense');
@@ -347,7 +427,6 @@ window.addEventListener('DOMContentLoaded', () => {
         const shareSection = document.getElementById('share-section');
         if (shareSection) shareSection.style.display = 'block';
         
-        // 起動時に全データを裏側で読み込み開始
         if (typeof loadSchedule === 'function') loadSchedule();
         if (typeof loadBudget === 'function') loadBudget();
         if (typeof loadExpenses === 'function') loadExpenses();
@@ -356,5 +435,11 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('app-header').innerText = headerTitle;
     } else {
         switchTab('settings', '設定');
+    }
+
+    // キュー処理の初期化
+    window.updateSyncBadge();
+    if (navigator.onLine) {
+        setTimeout(window.processSyncQueue, 1500);
     }
 });

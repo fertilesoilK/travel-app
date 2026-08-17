@@ -217,7 +217,6 @@ async function loadSchedule() {
     if (!APP_CONFIG.gasUrl) return;
     const listDiv = document.getElementById('schedule-list');
 
-    // キャッシュを読み込んで瞬時に描画
     const cached = localStorage.getItem('cache_schedule');
     if (cached) {
         scheduleData = JSON.parse(cached);
@@ -226,7 +225,6 @@ async function loadSchedule() {
         listDiv.innerHTML = '<p style="text-align: center; color: #666;">読み込み中...</p>';
     }
 
-    // 裏側で最新データを取得
     try {
         const response = await fetch(APP_CONFIG.gasUrl + "?sheet=旅程");
         const data = await response.json();
@@ -579,17 +577,10 @@ function deleteSchedule(id) {
     localStorage.setItem('cache_schedule', JSON.stringify(scheduleData));
     renderScheduleList();
 
-    if (!APP_CONFIG.gasUrl) return;
-    fetch(APP_CONFIG.gasUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-            sheet: '旅程',
-            action: 'delete',
-            id: id
-        })
-    }).catch(error => {
-        alert('通信エラーが発生しました．データを再読み込みします．');
-        loadSchedule(); 
+    window.safeFetch({
+        sheet: '旅程',
+        action: 'delete',
+        id: id
     });
 }
 
@@ -727,18 +718,10 @@ if (schedForm) {
             inputUrlName
         ];
 
-        const action = editId ? 'update' : 'insert';
-
-        fetch(APP_CONFIG.gasUrl, {
-            method: 'POST',
-            body: JSON.stringify({
-                sheet: '旅程',
-                action: action,
-                data: rowData
-            })
-        }).catch(error => {
-            alert('通信エラーが発生しました．データを再読み込みします．');
-            loadSchedule(); 
+        window.safeFetch({
+            sheet: '旅程',
+            action: editId ? 'update' : 'insert',
+            data: rowData
         });
     });
 }

@@ -210,17 +210,10 @@ window.deleteBudget = function(id) {
     localStorage.setItem('cache_budget', JSON.stringify(budgetData));
     renderBudgetList();
 
-    if (!APP_CONFIG.gasUrl) return;
-    fetch(APP_CONFIG.gasUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-            sheet: '予算',
-            action: 'delete',
-            id: id
-        })
-    }).catch(error => {
-        alert('通信エラーが発生しました．');
-        loadBudget(); 
+    window.safeFetch({
+        sheet: '予算',
+        action: 'delete',
+        id: id
     });
 }
 
@@ -299,16 +292,10 @@ if (bForm) {
             targetDays
         ];
 
-        fetch(APP_CONFIG.gasUrl, {
-            method: 'POST',
-            body: JSON.stringify({
-                sheet: '予算',
-                action: 'insert',
-                data: rowData
-            })
-        }).catch(error => {
-            alert('通信エラーが発生しました．');
-            loadBudget(); 
+        window.safeFetch({
+            sheet: '予算',
+            action: 'insert',
+            data: rowData
         });
     });
 }
