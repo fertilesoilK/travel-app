@@ -82,7 +82,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-async function loadBudget() {
+async function loadBudget(forceFetch = false) {
+    if (typeof forceFetch !== 'boolean') forceFetch = false;
+
+    // 旅行開始前なら強制的に最新データを取得する処理
+    if (APP_CONFIG.startDate) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startDate = new Date(APP_CONFIG.startDate);
+        startDate.setHours(0, 0, 0, 0);
+        if (today < startDate) {
+            forceFetch = true;
+        }
+    }
+
     if (!APP_CONFIG.gasUrl) return;
     const listDiv = document.getElementById('budget-list');
 
@@ -90,6 +103,7 @@ async function loadBudget() {
     if (cached) {
         budgetData = JSON.parse(cached);
         renderBudgetList();
+        if (!forceFetch) return; 
     } else {
         listDiv.innerHTML = '<p style="text-align: center; color: #666;">読み込み中...</p>';
     }

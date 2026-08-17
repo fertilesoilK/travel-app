@@ -70,7 +70,7 @@
                 <div class="card">
                     <h2 style="display: flex; justify-content: space-between; align-items: center;">
                         旅程一覧
-                        <button onclick="loadSchedule()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">更新</button>
+                        <button onclick="loadSchedule(true)" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">最新を取得</button>
                     </h2>
                     <div id="schedule-list">
                         <p style="text-align: center; color: #666;">設定からURLを登録してください</p>
@@ -151,7 +151,7 @@
                 <div class="card">
                     <h2 style="display: flex; justify-content: space-between; align-items: center;">
                         内訳リスト
-                        <button onclick="loadBudget()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">更新</button>
+                        <button onclick="loadBudget(true)" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">最新を取得</button>
                     </h2>
                     <div id="budget-list">
                         <p style="text-align: center; color: #666;">データを読み込んでいます...</p>
@@ -248,6 +248,12 @@
                     <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">GAS ウェブアプリURL</label>
                     <input type="url" id="set-url" required placeholder="https://script.google.com/..." style="width: 100%; padding: 8px; box-sizing: border-box;">
                 </div>
+
+                <div style="margin-bottom: 15px; padding: 15px; background-color: #fff3cd; border: 1px solid #f5c2c7; border-radius: 5px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #842029;">旅行開始日 (この日以降は自動通信を停止しデータ量を節約)</label>
+                    <input type="date" id="set-start-date" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                    <p style="font-size: 0.75em; color: #842029; margin-top: 5px; margin-bottom: 0;">※旅行前は常に自動で最新の旅程を読み込みます。</p>
+                </div>
                 
                 <div style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;">
                     <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #0056b3;">予算・支出の基本設定（外貨・日数）</label>
@@ -296,7 +302,6 @@
                     <button type="button" id="btn-add-member" style="margin-top: 5px; width: 100%; padding: 10px; background-color: #e2e6ea; color: #333; border: 1px dashed #ccc; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold;">＋ メンバーを追加</button>
                 </div>
                 
-                <!-- 新しく追加した「自分」の設定項目 -->
                 <div style="margin-bottom: 15px; padding: 10px; background-color: #e6f7ff; border: 1px solid #99c2ff; border-radius: 5px;">
                     <label style="display: block; font-size: 0.9em; margin-bottom: 3px; font-weight: bold; color: #0056b3;">自分の名前 (支出の支払者の初期値)</label>
                     <select id="set-myself" style="width: 100%; padding: 8px; box-sizing: border-box;">

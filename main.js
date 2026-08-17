@@ -2,6 +2,7 @@ let parsedConfig = JSON.parse(localStorage.getItem('trip_app_config')) || {};
 let APP_CONFIG = {
     gasUrl: parsedConfig.gasUrl || "",
     tripTitle: parsedConfig.tripTitle || "",
+    startDate: parsedConfig.startDate || "",
     defaultYear: parsedConfig.defaultYear || new Date().getFullYear(),
     month1: parsedConfig.month1 || new Date().getMonth() + 1,
     month2: parsedConfig.month2 || "",
@@ -163,7 +164,6 @@ function updateCurrencyDropdowns() {
     const expCur = document.getElementById('exp-currency');
     let html = '';
     
-    // 外貨1を一番上に配置
     if (APP_CONFIG.curr1Name) {
         html += '<option value="' + APP_CONFIG.curr1Name + '">' + APP_CONFIG.curr1Name + '</option>';
     }
@@ -185,6 +185,7 @@ if (settingsForm) {
         
         const tripTitle = document.getElementById('set-trip-title').value.trim();
         const url = document.getElementById('set-url').value;
+        const startDate = document.getElementById('set-start-date').value;
         const year = document.getElementById('set-year').value;
         const m1 = document.getElementById('set-month1').value;
         const m2 = document.getElementById('set-month2').value;
@@ -219,6 +220,7 @@ if (settingsForm) {
         APP_CONFIG = {
             gasUrl: url,
             tripTitle: tripTitle,
+            startDate: startDate,
             defaultYear: parseInt(year),
             month1: parseInt(m1),
             month2: m2 ? parseInt(m2) : "",
@@ -249,6 +251,7 @@ if (btnShareSettings) {
         const shareUrl = new URL(window.location.href);
         shareUrl.searchParams.set('setup_title', APP_CONFIG.tripTitle);
         shareUrl.searchParams.set('setup_gas', APP_CONFIG.gasUrl);
+        shareUrl.searchParams.set('s_sd_date', APP_CONFIG.startDate);
         shareUrl.searchParams.set('setup_year', APP_CONFIG.defaultYear);
         shareUrl.searchParams.set('setup_m1', APP_CONFIG.month1);
         if (APP_CONFIG.month2) shareUrl.searchParams.set('setup_m2', APP_CONFIG.month2);
@@ -357,6 +360,7 @@ window.addEventListener('DOMContentLoaded', () => {
         APP_CONFIG = {
             gasUrl: params.get('setup_gas'),
             tripTitle: params.has('setup_title') ? params.get('setup_title') : "",
+            startDate: params.has('s_sd_date') ? params.get('s_sd_date') : "",
             defaultYear: parseInt(params.get('setup_year')),
             month1: parseInt(params.get('setup_m1')),
             month2: params.get('setup_m2') ? parseInt(params.get('setup_m2')) : "",
@@ -414,6 +418,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const setUrlEl = document.getElementById('set-url');
     if (setUrlEl) setUrlEl.value = APP_CONFIG.gasUrl || "";
     
+    const setStartDateEl = document.getElementById('set-start-date');
+    if (setStartDateEl) setStartDateEl.value = APP_CONFIG.startDate || "";
+
     if (yearSelect) yearSelect.value = APP_CONFIG.defaultYear;
     if (m1Select) m1Select.value = APP_CONFIG.month1 || 1;
     if (m2Select) m2Select.value = APP_CONFIG.month2 || "";
