@@ -20,7 +20,6 @@
                     <div class="card">
                         <h2>新しい予定を追加</h2>
                         <form id="schedule-form">
-                            <!-- 編集時にIDを保持するための隠しフィールド -->
                             <input type="hidden" id="edit-schedule-id" value="">
                             
                             <div style="margin-bottom: 10px;">
@@ -42,7 +41,6 @@
                             </div>
 
                             <div id="sched-dynamic-area" style="padding: 10px; background-color: #f8f9fa; border-radius: 5px; margin-bottom: 10px; border: 1px solid #e9ecef;">
-                                <!-- schedule.js で入力欄が自動生成されます -->
                             </div>
 
                             <div style="margin-bottom: 10px; display: flex; gap: 10px;">
@@ -117,13 +115,10 @@
                                     <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">通貨</label>
                                     <select id="bg-currency" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                         <option value="円">日本円 (¥)</option>
-                                        <option value="EUR">ユーロ (€)</option>
-                                        <option value="MAD">ディルハム (MAD)</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <!-- 日数調整エリア -->
                             <div id="bg-days-area" style="display: none; margin-bottom: 10px; background-color: #e6f7ff; padding: 10px; border-radius: 5px; border: 1px dashed #0056b3;">
                                 <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: #0056b3; font-weight: bold;">掛ける日数</label>
                                 <div style="display: flex; gap: 5px; align-items: center;">
@@ -205,8 +200,6 @@
                                     <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">通貨</label>
                                     <select id="exp-currency" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                         <option value="円">日本円 (¥)</option>
-                                        <option value="EUR">ユーロ (€)</option>
-                                        <option value="MAD">ディルハム (MAD)</option>
                                     </select>
                                 </div>
                             </div>
@@ -219,7 +212,6 @@
                             <div style="margin-bottom: 15px;">
                                 <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">誰の分？（複数選択可）</label>
                                 <div id="exp-target-container" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    <!-- expense.js でチェックボックスが自動生成されます -->
                                 </div>
                             </div>
                             <button type="submit" id="btn-submit-exp" style="width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">支出を記録</button>
@@ -261,15 +253,25 @@
                 </div>
                 
                 <div style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #0056b3;">予算・支出の基本設定</label>
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #0056b3;">予算・支出の基本設定（外貨・日数）</label>
                     <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
                         <div style="flex: 1; min-width: 45%;">
-                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">ユーロ/円 (EUR)</label>
-                            <input type="number" id="set-rate-eur" step="any" required placeholder="例: 165" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨1の名前</label>
+                            <input type="text" id="set-curr1-name" required placeholder="例: EUR" style="width: 100%; padding: 8px; box-sizing: border-box;">
                         </div>
                         <div style="flex: 1; min-width: 45%;">
-                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">MAD/円 (MAD)</label>
-                            <input type="number" id="set-rate-mad" step="any" required placeholder="例: 15" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨1のレート (1外貨=何円?)</label>
+                            <input type="number" id="set-rate-curr1" step="any" required placeholder="例: 165" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <div style="flex: 1; min-width: 45%;">
+                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨2の名前 (使わない場合は空欄)</label>
+                            <input type="text" id="set-curr2-name" placeholder="例: MAD" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                        </div>
+                        <div style="flex: 1; min-width: 45%;">
+                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨2のレート</label>
+                            <input type="number" id="set-rate-curr2" step="any" placeholder="例: 17.13" style="width: 100%; padding: 8px; box-sizing: border-box;">
                         </div>
                     </div>
                     <div>
@@ -311,7 +313,7 @@
             </form>
 
             <div id="share-section" style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed #ccc; display: none;">
-                <p style="font-size: 0.9em; margin-top: 0; margin-bottom: 8px;"><strong>📱 メンバーに設定を共有</strong></p>
+                <p style="font-size: 0.9em; margin-top: 0; margin-bottom: 8px;">📱 メンバーに設定を共有</p>
                 <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">このボタンを押してURLをコピーし，LINE等でメンバーに送ってください．相手がURLを開くと自動で設定が完了します．</p>
                 <button type="button" id="btn-share-settings" style="width: 100%; padding: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🔗 共有用URLをコピー</button>
             </div>

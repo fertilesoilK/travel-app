@@ -1,4 +1,3 @@
-// パソコン表示時の入力フォーム幅を広く調整
 const budgetStyle = document.createElement('style');
 budgetStyle.innerHTML = `
     @media (min-width: 768px) {
@@ -14,8 +13,6 @@ let budgetData = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const bgTargetDaysInput = document.getElementById('bg-target-days');
-
-    // 「計算方法」が日額のときだけ、掛ける日数入力エリアを表示する
     const bgType = document.getElementById('bg-type');
     const bgDaysArea = document.getElementById('bg-days-area');
     
@@ -23,30 +20,28 @@ document.addEventListener('DOMContentLoaded', () => {
         bgType.addEventListener('change', (e) => {
             if (e.target.value === '日額') {
                 bgDaysArea.style.display = 'block';
-                bgTargetDaysInput.value = APP_CONFIG.baseDays || 15; // 設定した基準日数をセット
+                bgTargetDaysInput.value = APP_CONFIG.baseDays || 15;
             } else {
                 bgDaysArea.style.display = 'none';
             }
         });
     }
 
-    // 掛ける日数のプラスマイナスボタン
     const btnMinusDay = document.getElementById('btn-minus-bg-day');
     const btnPlusDay = document.getElementById('btn-plus-bg-day');
     if (btnMinusDay) {
         btnMinusDay.addEventListener('click', () => {
-            let val = parseInt(bgTargetDaysInput.value) || 0;
+            let val = parseFloat(bgTargetDaysInput.value) || 0;
             if (val > 1) bgTargetDaysInput.value = val - 1;
         });
     }
     if (btnPlusDay) {
         btnPlusDay.addEventListener('click', () => {
-            let val = parseInt(bgTargetDaysInput.value) || 0;
+            let val = parseFloat(bgTargetDaysInput.value) || 0;
             bgTargetDaysInput.value = val + 1;
         });
     }
 
-    // 観光費・宿泊費・食費は用途を任意にする処理
     const bgCategory = document.getElementById('bg-category');
     const bgDetail = document.getElementById('bg-detail');
     const bgDetailLabel = document.getElementById('bg-detail-label');
@@ -81,13 +76,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('btn-submit-bg').innerText = '予算を追加';
                 document.getElementById('budget-form').reset();
                 updateDetailRequirement();
-                if(bgDaysArea) bgDaysArea.style.display = 'none'; // リセット時に隠す
+                if(bgDaysArea) bgDaysArea.style.display = 'none';
             }
         });
     }
 });
 
-// タブ切り替え時に読み込み
 document.querySelector(`[onclick="switchTab('budget', '予算')"]`).addEventListener('click', loadBudget);
 
 async function loadBudget() {
@@ -122,8 +116,10 @@ function renderBudgetList() {
         return;
     }
 
-    const rateEur = parseFloat(APP_CONFIG.rateEur) || 165;
-    const rateMad = parseFloat(APP_CONFIG.rateMad) || 15;
+    const curr1Name = APP_CONFIG.curr1Name;
+    const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
+    const curr2Name = APP_CONFIG.curr2Name;
+    const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
     const baseDays = parseFloat(APP_CONFIG.baseDays) || 15;
 
     let html = '';
@@ -144,31 +140,28 @@ function renderBudgetList() {
             const currency = row['通貨'];
             const isDaily = row['計算方法'] === '日額';
             
-            // G列の「掛ける日数」があればそれを使用。なければ基本設定の基準日数を使う
             const targetDays = (isDaily && row['掛ける日数']) ? parseFloat(row['掛ける日数']) : baseDays;
             
             let itemJPY = amount;
             let calcDetail = '';
 
-            // 通貨ごとの換算
-            if (currency === 'EUR') {
-                itemJPY *= rateEur;
+            if (currency !== '円' && currency === curr1Name && curr1Name) {
+                itemJPY *= rateCurr1;
                 if (isDaily) {
-                    calcDetail = '(€' + amount.toLocaleString() + ' × ' + targetDays + '日 × ' + rateEur + '円)';
+                    calcDetail = '(' + curr1Name + ' ' + amount.toLocaleString() + ' × ' + targetDays + '日 × ' + rateCurr1 + '円)';
                     itemJPY *= targetDays;
                 } else {
-                    calcDetail = '(€' + amount.toLocaleString() + ' × ' + rateEur + '円)';
+                    calcDetail = '(' + curr1Name + ' ' + amount.toLocaleString() + ' × ' + rateCurr1 + '円)';
                 }
-            } else if (currency === 'MAD') {
-                itemJPY *= rateMad;
+            } else if (currency !== '円' && currency === curr2Name && curr2Name) {
+                itemJPY *= rateCurr2;
                 if (isDaily) {
-                    calcDetail = '(' + amount.toLocaleString() + 'MAD × ' + targetDays + '日 × ' + rateMad + '円)';
+                    calcDetail = '(' + curr2Name + ' ' + amount.toLocaleString() + ' × ' + targetDays + '日 × ' + rateCurr2 + '円)';
                     itemJPY *= targetDays;
                 } else {
-                    calcDetail = '(' + amount.toLocaleString() + 'MAD × ' + rateMad + '円)';
+                    calcDetail = '(' + curr2Name + ' ' + amount.toLocaleString() + ' × ' + rateCurr2 + '円)';
                 }
             } else {
-                // 日本円
                 if (isDaily) {
                     calcDetail = '(¥' + amount.toLocaleString() + ' × ' + targetDays + '日)';
                     itemJPY *= targetDays;

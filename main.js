@@ -1,13 +1,16 @@
-let APP_CONFIG = JSON.parse(localStorage.getItem('trip_app_config')) || {
-    gasUrl: "",
-    defaultYear: new Date().getFullYear(),
-    month1: new Date().getMonth() + 1,
-    month2: "",
-    travelers: [],
-    stayCities: [],
-    rateEur: 165,
-    rateMad: 15,
-    baseDays: 15
+let parsedConfig = JSON.parse(localStorage.getItem('trip_app_config')) || {};
+let APP_CONFIG = {
+    gasUrl: parsedConfig.gasUrl || "",
+    defaultYear: parsedConfig.defaultYear || new Date().getFullYear(),
+    month1: parsedConfig.month1 || new Date().getMonth() + 1,
+    month2: parsedConfig.month2 || "",
+    travelers: parsedConfig.travelers || [],
+    stayCities: parsedConfig.stayCities || [],
+    curr1Name: parsedConfig.curr1Name !== undefined ? parsedConfig.curr1Name : "EUR",
+    curr1Rate: parsedConfig.curr1Rate !== undefined ? parsedConfig.curr1Rate : (parsedConfig.rateEur || 165),
+    curr2Name: parsedConfig.curr2Name !== undefined ? parsedConfig.curr2Name : "MAD",
+    curr2Rate: parsedConfig.curr2Rate !== undefined ? parsedConfig.curr2Rate : (parsedConfig.rateMad || 17.13),
+    baseDays: parsedConfig.baseDays !== undefined ? parsedConfig.baseDays : 15
 };
 
 function switchTab(tabId, title) {
@@ -131,6 +134,20 @@ function configureDateInputs() {
     else if (expDateInput) expDateInput.value = minDate;
 }
 
+function updateCurrencyDropdowns() {
+    const bgCur = document.getElementById('bg-currency');
+    const expCur = document.getElementById('exp-currency');
+    let html = '<option value="円">日本円 (¥)</option>';
+    if (APP_CONFIG.curr1Name) {
+        html += '<option value="' + APP_CONFIG.curr1Name + '">' + APP_CONFIG.curr1Name + '</option>';
+    }
+    if (APP_CONFIG.curr2Name) {
+        html += '<option value="' + APP_CONFIG.curr2Name + '">' + APP_CONFIG.curr2Name + '</option>';
+    }
+    if (bgCur) bgCur.innerHTML = html;
+    if (expCur) expCur.innerHTML = html;
+}
+
 const settingsForm = document.getElementById('settings-form');
 if (settingsForm) {
     settingsForm.addEventListener('submit', function(e) {
@@ -141,8 +158,10 @@ if (settingsForm) {
         const m1 = document.getElementById('set-month1').value;
         const m2 = document.getElementById('set-month2').value;
         
-        const rateEur = document.getElementById('set-rate-eur').value;
-        const rateMad = document.getElementById('set-rate-mad').value;
+        const curr1Name = document.getElementById('set-curr1-name').value.trim();
+        const rateCurr1 = document.getElementById('set-rate-curr1').value;
+        const curr2Name = document.getElementById('set-curr2-name').value.trim();
+        const rateCurr2 = document.getElementById('set-rate-curr2').value;
         const baseDays = document.getElementById('set-days').value;
         
         const memberInputs = document.querySelectorAll('.member-input');
@@ -171,8 +190,10 @@ if (settingsForm) {
             month2: m2 ? parseInt(m2) : "",
             travelers: membersArray,
             stayCities: citiesArray,
-            rateEur: parseFloat(rateEur),
-            rateMad: parseFloat(rateMad),
+            curr1Name: curr1Name,
+            curr1Rate: parseFloat(rateCurr1),
+            curr2Name: curr2Name,
+            curr2Rate: parseFloat(rateCurr2) || 0,
             baseDays: parseFloat(baseDays)
         };
         
@@ -192,9 +213,12 @@ if (btnShareSettings) {
         if (APP_CONFIG.month2) shareUrl.searchParams.set('setup_m2', APP_CONFIG.month2);
         shareUrl.searchParams.set('setup_members', APP_CONFIG.travelers.join(','));
         shareUrl.searchParams.set('setup_cities', APP_CONFIG.stayCities.join(','));
-        shareUrl.searchParams.set('setup_eur', APP_CONFIG.rateEur);
-        shareUrl.searchParams.set('setup_mad', APP_CONFIG.rateMad);
-        shareUrl.searchParams.set('setup_days', APP_CONFIG.baseDays);
+        
+        shareUrl.searchParams.set('s_c1n', APP_CONFIG.curr1Name);
+        shareUrl.searchParams.set('s_c1r', APP_CONFIG.curr1Rate);
+        shareUrl.searchParams.set('s_c2n', APP_CONFIG.curr2Name);
+        shareUrl.searchParams.set('s_c2r', APP_CONFIG.curr2Rate);
+        shareUrl.searchParams.set('s_d', APP_CONFIG.baseDays);
         
         navigator.clipboard.writeText(shareUrl.toString()).then(() => {
             alert('共有用URLをコピーしました！LINE等でメンバーに送ってください．');
@@ -214,9 +238,11 @@ window.addEventListener('DOMContentLoaded', () => {
             month2: params.get('setup_m2') ? parseInt(params.get('setup_m2')) : "",
             travelers: params.get('setup_members').split(','),
             stayCities: params.has('setup_cities') ? params.get('setup_cities').split(',') : [],
-            rateEur: params.has('setup_eur') ? parseFloat(params.get('setup_eur')) : 165,
-            rateMad: params.has('setup_mad') ? parseFloat(params.get('setup_mad')) : 15,
-            baseDays: params.has('setup_days') ? parseFloat(params.get('setup_days')) : 15
+            curr1Name: params.has('s_c1n') ? params.get('s_c1n') : "EUR",
+            curr1Rate: params.has('s_c1r') ? parseFloat(params.get('s_c1r')) : 165,
+            curr2Name: params.has('s_c2n') ? params.get('s_c2n') : "MAD",
+            curr2Rate: params.has('s_c2r') ? parseFloat(params.get('s_c2r')) : 15,
+            baseDays: params.has('s_d') ? parseFloat(params.get('s_d')) : 15
         };
         localStorage.setItem('trip_app_config', JSON.stringify(APP_CONFIG));
         
@@ -260,8 +286,10 @@ window.addEventListener('DOMContentLoaded', () => {
     if (m1Select) m1Select.value = APP_CONFIG.month1 || 1;
     if (m2Select) m2Select.value = APP_CONFIG.month2 || "";
     
-    document.getElementById('set-rate-eur').value = APP_CONFIG.rateEur || 165;
-    document.getElementById('set-rate-mad').value = APP_CONFIG.rateMad || 15;
+    document.getElementById('set-curr1-name').value = APP_CONFIG.curr1Name || "";
+    document.getElementById('set-rate-curr1').value = APP_CONFIG.curr1Rate || "";
+    document.getElementById('set-curr2-name').value = APP_CONFIG.curr2Name || "";
+    document.getElementById('set-rate-curr2').value = APP_CONFIG.curr2Rate || "";
     document.getElementById('set-days').value = APP_CONFIG.baseDays || 15;
     
     if (membersContainer) {
@@ -283,6 +311,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     
     configureDateInputs();
+    updateCurrencyDropdowns();
 
     if (APP_CONFIG.gasUrl) {
         const shareSection = document.getElementById('share-section');

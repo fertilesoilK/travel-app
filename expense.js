@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const payerSelect = document.getElementById('exp-payer');
     const targetContainer = document.getElementById('exp-target-container');
     
-    // 支払った人のプルダウン生成
     if (APP_CONFIG.travelers && APP_CONFIG.travelers.length > 0) {
         APP_CONFIG.travelers.forEach(name => {
             const option1 = document.createElement('option');
@@ -14,11 +13,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 誰の分？のチェックボックス生成
     if (targetContainer && APP_CONFIG.travelers && APP_CONFIG.travelers.length > 0) {
         targetContainer.innerHTML = '';
         
-        // 全員ボタン
         const allLabel = document.createElement('label');
         allLabel.style.cssText = 'display: flex; align-items: center; gap: 5px; background: #e6f7ff; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; cursor: pointer; border: 1px solid #0056b3; font-weight: bold; color: #0056b3; transition: 0.2s;';
         const allCb = document.createElement('input');
@@ -32,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const memberCbs = [];
         
-        // 各メンバーのボタン
         APP_CONFIG.travelers.forEach(name => {
             const lbl = document.createElement('label');
             lbl.style.cssText = 'display: flex; align-items: center; gap: 5px; background: #e6f7ff; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; cursor: pointer; border: 1px solid #0056b3; font-weight: bold; color: #0056b3; transition: 0.2s;';
@@ -47,7 +43,6 @@ document.addEventListener('DOMContentLoaded', () => {
             targetContainer.appendChild(lbl);
             memberCbs.push({cb, lbl});
             
-            // 個別ボタンを押した時の色と連動処理
             cb.addEventListener('change', () => {
                 if (cb.checked) {
                     lbl.style.backgroundColor = '#e6f7ff';
@@ -71,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // 全員ボタンを押した時の連動処理
         allCb.addEventListener('change', () => {
             const isChecked = allCb.checked;
             allLabel.style.backgroundColor = isChecked ? '#e6f7ff' : '#f8f9fa';
@@ -151,8 +145,10 @@ function renderExpenseList() {
     const balances = {};
     APP_CONFIG.travelers.forEach(person => balances[person] = 0);
 
-    const rateEur = parseFloat(APP_CONFIG.rateEur) || 165;
-    const rateMad = parseFloat(APP_CONFIG.rateMad) || 15;
+    const curr1Name = APP_CONFIG.curr1Name;
+    const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
+    const curr2Name = APP_CONFIG.curr2Name;
+    const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
 
     expenseData.forEach(row => {
         let dateStr = '';
@@ -165,15 +161,16 @@ function renderExpenseList() {
             }
         }
         
-        let itemJPY = parseInt(row['金額']) || 0;
+        let itemJPY = parseFloat(row['金額']) || 0;
         const currency = row['通貨'] || '円';
         const originalAmount = row['外貨金額'] !== undefined && row['外貨金額'] !== '' ? parseFloat(row['外貨金額']) : itemJPY;
         
-        // 最新のレートで再計算（外貨の場合）
-        if (currency === 'EUR') {
-            itemJPY = Math.round(originalAmount * rateEur);
-        } else if (currency === 'MAD') {
-            itemJPY = Math.round(originalAmount * rateMad);
+        if (currency !== '円' && currency === curr1Name && curr1Name) {
+            itemJPY = Math.round(originalAmount * rateCurr1);
+        } else if (currency !== '円' && currency === curr2Name && curr2Name) {
+            itemJPY = Math.round(originalAmount * rateCurr2);
+        } else {
+            itemJPY = Math.round(itemJPY);
         }
         
         const payer = row['支払者'] || '';
@@ -191,7 +188,6 @@ function renderExpenseList() {
 
         totalAmount += itemJPY;
         
-        // --- 割り勘計算ロジック ---
         let targets = [];
         if (targetStr === '全員') {
             targets = APP_CONFIG.travelers;
@@ -236,9 +232,8 @@ function renderExpenseList() {
     });
     listDiv.innerHTML = html;
 
-    // --- 精算アルゴリズム（誰が誰に払うか） ---
-    let creditors = []; // 貸し（もらう側）
-    let debtors = [];   // 借り（払う側）
+    let creditors = [];
+    let debtors = [];
 
     for (const [person, amount] of Object.entries(balances)) {
         if (amount > 0.5) creditors.push({ person, amount: amount });
@@ -338,13 +333,15 @@ document.getElementById('expense-form').addEventListener('submit', function(e) {
     const currency = document.getElementById('exp-currency').value;
     
     let itemJPY = amount;
-    const rateEur = parseFloat(APP_CONFIG.rateEur) || 165;
-    const rateMad = parseFloat(APP_CONFIG.rateMad) || 15;
+    const curr1Name = APP_CONFIG.curr1Name;
+    const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
+    const curr2Name = APP_CONFIG.curr2Name;
+    const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
     
-    if (currency === 'EUR') {
-        itemJPY = amount * rateEur;
-    } else if (currency === 'MAD') {
-        itemJPY = amount * rateMad;
+    if (currency !== '円' && currency === curr1Name && curr1Name) {
+        itemJPY = amount * rateCurr1;
+    } else if (currency !== '円' && currency === curr2Name && curr2Name) {
+        itemJPY = amount * rateCurr2;
     }
     itemJPY = Math.round(itemJPY);
     
