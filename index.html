@@ -5,19 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>旅行管理アプリ</title>
     <link rel="stylesheet" href="style.css">
-    <!-- PWA化のための設定を追記 -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0056b3">
     <link rel="apple-touch-icon" href="icon-192.png">
-    
-    <!-- グラフ描画用ライブラリ Chart.js の読み込み -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
     <header style="display: flex; justify-content: space-between; align-items: center; padding: 0 15px;">
         <span id="app-header">旅程</span>
-        <span id="sync-badge" style="font-size: 0.65em; background-color: #ffc107; color: #000; padding: 3px 8px; border-radius: 12px; display: none; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">未送信</span>
+        <span id="sync-badge" style="font-size: 0.65em; background-color: var(--warn-bg); color: var(--warn-text); padding: 3px 8px; border-radius: 12px; display: none; font-weight: bold;">未送信</span>
     </header>
 
     <!-- 旅程画面 -->
@@ -25,46 +22,40 @@
         <div class="two-column-layout">
             <div class="form-column">
                 <button id="toggle-sched-form" class="toggle-form-btn">＋ 新しい予定を追加</button>
-                
                 <div id="sched-form-wrapper" class="collapsible-form">
                     <div class="card">
                         <h2>新しい予定を追加</h2>
                         <form id="schedule-form">
                             <input type="hidden" id="edit-schedule-id" value="">
-                            
                             <div style="margin-bottom: 10px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">日付</label>
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">日付</label>
                                 <div style="display: flex; gap: 5px; align-items: center;">
-                                    <button type="button" id="btn-prev-day" style="padding: 8px 15px; background-color: #e2e6ea; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold;">◀</button>
-                                    <input type="date" id="sched-date" required style="flex: 1; padding: 8px; box-sizing: border-box; background-color: #f8f9fa;">
-                                    <button type="button" id="btn-next-day" style="padding: 8px 15px; background-color: #e2e6ea; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold;">▶</button>
+                                    <button type="button" id="btn-prev-day" style="padding: 8px 15px; background-color: var(--input-bg); border: 1px solid var(--input-border); border-radius: 4px; cursor: pointer; font-weight: bold; color: var(--text-main);">◀</button>
+                                    <input type="date" id="sched-date" required style="flex: 1; padding: 8px; box-sizing: border-box;">
+                                    <button type="button" id="btn-next-day" style="padding: 8px 15px; background-color: var(--input-bg); border: 1px solid var(--input-border); border-radius: 4px; cursor: pointer; font-weight: bold; color: var(--text-main);">▶</button>
                                 </div>
                             </div>
-                            
                             <div style="margin-bottom: 10px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">カテゴリ</label>
-                                <select id="sched-category" style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #f8f9fa; font-weight: bold;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">カテゴリ</label>
+                                <select id="sched-category" style="width: 100%; padding: 8px; box-sizing: border-box; font-weight: bold;">
                                     <option value="観光">観光・その他</option>
                                     <option value="交通">移動・交通</option>
                                     <option value="宿泊">宿泊</option>
                                 </select>
                             </div>
-
-                            <div id="sched-dynamic-area" style="padding: 10px; background-color: #f8f9fa; border-radius: 5px; margin-bottom: 10px; border: 1px solid #e9ecef;">
-                            </div>
-
+                            <div id="sched-dynamic-area" style="padding: 10px; background-color: var(--input-bg); border-radius: 5px; margin-bottom: 10px; border: 1px solid var(--border-color);"></div>
                             <div style="margin-bottom: 10px; display: flex; gap: 10px;">
                                 <div style="flex: 2;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">参考URL</label>
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">参考URL</label>
                                     <input type="url" id="sched-url" placeholder="https://..." style="width: 100%; padding: 8px; box-sizing: border-box;">
                                 </div>
                                 <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">URL名 (任意)</label>
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">URL名 (任意)</label>
                                     <input type="text" id="sched-url-name" placeholder="例：公式" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                 </div>
                             </div>
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">メモ</label>
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">メモ</label>
                                 <input type="text" id="sched-memo" placeholder="備考があれば" style="width: 100%; padding: 8px; box-sizing: border-box;">
                             </div>
                             <button type="submit" id="btn-submit-sched" style="width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">予定を追加</button>
@@ -72,16 +63,13 @@
                     </div>
                 </div>
             </div>
-
             <div class="list-column">
                 <div class="card">
                     <h2 style="display: flex; justify-content: space-between; align-items: center;">
                         旅程一覧
-                        <button onclick="loadSchedule(true)" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">最新を取得</button>
+                        <button onclick="loadSchedule(true)" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer; color: var(--text-main); background: var(--input-bg); border: 1px solid var(--border-color);">最新を取得</button>
                     </h2>
-                    <div id="schedule-list">
-                        <p style="text-align: center; color: #666;">設定からURLを登録してください</p>
-                    </div>
+                    <div id="schedule-list"><p style="text-align: center; color: var(--text-muted);">設定からURLを登録してください</p></div>
                 </div>
             </div>
         </div>
@@ -92,15 +80,13 @@
         <div class="two-column-layout">
             <div class="form-column">
                 <button id="toggle-budget-form" class="toggle-form-btn">＋ 予算項目を追加</button>
-                
                 <div id="budget-form-wrapper" class="collapsible-form">
                     <div class="card">
                         <h2>予算項目を追加</h2>
                         <form id="budget-form">
                             <input type="hidden" id="edit-budget-id" value="">
-                            
                             <div style="margin-bottom: 10px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">カテゴリ</label>
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">カテゴリ</label>
                                 <select id="bg-category" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                     <option value="交通費">交通費</option>
                                     <option value="宿泊費">宿泊費</option>
@@ -110,59 +96,51 @@
                                 </select>
                             </div>
                             <div style="margin-bottom: 10px;">
-                                <label id="bg-detail-label" style="display: block; font-size: 0.9em; margin-bottom: 3px;">用途・詳細 (必須)</label>
+                                <label id="bg-detail-label" style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">用途・詳細 (必須)</label>
                                 <input type="text" id="bg-detail" required placeholder="例：航空券，マドリード観光など" style="width: 100%; padding: 8px; box-sizing: border-box;">
                             </div>
                             <div style="margin-bottom: 10px; display: flex; gap: 10px;">
                                 <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">計算方法</label>
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">計算方法</label>
                                     <select id="bg-type" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                         <option value="固定費">固定額 (1回きり)</option>
                                         <option value="日額">1日あたり (×日数)</option>
                                     </select>
                                 </div>
                                 <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">通貨</label>
-                                    <select id="bg-currency" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                                    </select>
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">通貨</label>
+                                    <select id="bg-currency" style="width: 100%; padding: 8px; box-sizing: border-box;"></select>
                                 </div>
                             </div>
-
-                            <div id="bg-days-area" style="display: none; margin-bottom: 10px; background-color: #e6f7ff; padding: 10px; border-radius: 5px; border: 1px dashed #0056b3;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: #0056b3; font-weight: bold;">掛ける日数</label>
+                            <div id="bg-days-area" style="display: none; margin-bottom: 10px; background-color: var(--highlight-bg); padding: 10px; border-radius: 5px; border: 1px dashed var(--highlight-border);">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--primary-color); font-weight: bold;">掛ける日数</label>
                                 <div style="display: flex; gap: 5px; align-items: center;">
-                                    <button type="button" id="btn-minus-bg-day" style="padding: 8px 15px; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold;">－</button>
+                                    <button type="button" id="btn-minus-bg-day" style="padding: 8px 15px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-weight: bold; color: var(--text-main);">－</button>
                                     <input type="number" id="bg-target-days" step="any" style="flex: 1; padding: 8px; box-sizing: border-box; text-align: center;">
-                                    <button type="button" id="btn-plus-bg-day" style="padding: 8px 15px; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold;">＋</button>
+                                    <button type="button" id="btn-plus-bg-day" style="padding: 8px 15px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-weight: bold; color: var(--text-main);">＋</button>
                                 </div>
-                                <div style="font-size: 0.8em; color: #666; margin-top: 5px;">※デフォルトは設定タブの基準日数が入ります</div>
+                                <div style="font-size: 0.8em; color: var(--text-muted); margin-top: 5px;">※デフォルトは設定タブの基準日数が入ります</div>
                             </div>
-
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">金額</label>
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">金額</label>
                                 <input type="number" id="bg-amount" step="any" required placeholder="例：140000" style="width: 100%; padding: 8px; box-sizing: border-box;">
                             </div>
-                            
                             <button type="submit" id="btn-submit-bg" style="width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">予算を追加</button>
                         </form>
                     </div>
                 </div>
             </div>
-
             <div class="list-column">
-                <div class="card" style="background-color: #fff9e6; border: 2px solid #ffd54f; text-align: center; margin-bottom: 15px;">
-                    <h2 style="margin-top: 0; color: #333; font-size: 1.2em;">総予算見積もり</h2>
+                <div class="card" style="background-color: var(--warn-bg); border: 2px solid var(--warn-border); text-align: center; margin-bottom: 15px;">
+                    <h2 style="margin-top: 0; color: var(--text-main); font-size: 1.2em; border: none;">総予算見積もり</h2>
                     <div id="budget-total" style="font-size: 2.2em; font-weight: bold; color: #d32f2f;">¥ 0</div>
                 </div>
-
                 <div class="card">
                     <h2 style="display: flex; justify-content: space-between; align-items: center;">
                         内訳リスト
-                        <button onclick="loadBudget(true)" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">最新を取得</button>
+                        <button onclick="loadBudget(true)" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer; color: var(--text-main); background: var(--input-bg); border: 1px solid var(--border-color);">最新を取得</button>
                     </h2>
-                    <div id="budget-list">
-                        <p style="text-align: center; color: #666;">データを読み込んでいます...</p>
-                    </div>
+                    <div id="budget-list"><p style="text-align: center; color: var(--text-muted);">データを読み込んでいます...</p></div>
                 </div>
             </div>
         </div>
@@ -177,13 +155,12 @@
                         <h2>支出を追加</h2>
                         <form id="expense-form">
                             <div style="margin-bottom: 10px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">日付</label>
-                                <input type="date" id="exp-date" required style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #f8f9fa;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">日付</label>
+                                <input type="date" id="exp-date" required style="width: 100%; padding: 8px; box-sizing: border-box;">
                             </div>
-                            
                             <div style="margin-bottom: 10px; display: flex; gap: 10px;">
                                 <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">カテゴリ</label>
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">カテゴリ</label>
                                     <select id="exp-category" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                         <option value="食費">🍔 食費</option>
                                         <option value="交通費">🚃 交通費</option>
@@ -193,61 +170,50 @@
                                     </select>
                                 </div>
                                 <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">詳細</label>
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">詳細</label>
                                     <input type="text" id="exp-detail" required placeholder="例：ランチ" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                 </div>
                             </div>
-
                             <div style="margin-bottom: 10px; display: flex; gap: 10px;">
                                 <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">金額</label>
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">金額</label>
                                     <input type="number" id="exp-amount" step="any" required placeholder="例：3000" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                 </div>
                                 <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">通貨</label>
-                                    <select id="exp-currency" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                                    </select>
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">通貨</label>
+                                    <select id="exp-currency" style="width: 100%; padding: 8px; box-sizing: border-box;"></select>
                                 </div>
                             </div>
-                            
                             <div style="margin-bottom: 10px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">支払った人</label>
-                                <select id="exp-payer" required style="width: 100%; padding: 8px; box-sizing: border-box;">
-                                </select>
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">支払った人</label>
+                                <select id="exp-payer" required style="width: 100%; padding: 8px; box-sizing: border-box;"></select>
                             </div>
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">対象者（複数選択可）</label>
-                                <div id="exp-target-container" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                </div>
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 5px; color: var(--text-main);">対象者（複数選択可）</label>
+                                <div id="exp-target-container" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
                             </div>
                             <button type="submit" id="btn-submit-exp" style="width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">支出を記録</button>
                         </form>
                     </div>
                 </div>
-
                 <div class="card">
                     <h2>割り勘の結果 (清算)</h2>
-                    <div id="settlement-result">
-                        <p style="text-align: center; color: #666;">データがありません</p>
-                    </div>
+                    <div id="settlement-result"><p style="text-align: center; color: var(--text-muted);">データがありません</p></div>
                 </div>
             </div>
-
             <div class="list-column">
                 <div class="card">
                     <h2 style="display: flex; justify-content: space-between; align-items: center;">
                         支出履歴
-                        <button onclick="loadExpenses()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">更新</button>
+                        <button onclick="loadExpenses()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer; color: var(--text-main); background: var(--input-bg); border: 1px solid var(--border-color);">更新</button>
                     </h2>
                     <div style="margin-bottom: 10px; display: flex; justify-content: flex-end; align-items: center; gap: 5px;">
-                        <span style="font-size: 0.85em; color: #666;">絞り込み:</span>
-                        <select id="expense-filter" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85em;">
+                        <span style="font-size: 0.85em; color: var(--text-muted);">絞り込み:</span>
+                        <select id="expense-filter" style="padding: 5px; border-radius: 4px; border: 1px solid var(--border-color); font-size: 0.85em;">
                             <option value="all">すべて表示</option>
                         </select>
                     </div>
-                    <div id="expense-list">
-                        <p style="text-align: center; color: #666;">設定からURLを登録してください</p>
-                    </div>
+                    <div id="expense-list"><p style="text-align: center; color: var(--text-muted);">設定からURLを登録してください</p></div>
                 </div>
             </div>
         </div>
@@ -263,17 +229,16 @@
                         <h2>項目を追加</h2>
                         <form id="todo-form">
                             <div style="margin-bottom: 10px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">種類</label>
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">種類</label>
                                 <select id="todo-type" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                     <option value="共有ToDo">👥 共有ToDo</option>
                                     <option value="個人ToDo">👤 個人ToDo</option>
                                     <option value="持ち物">👜 持ち物</option>
                                 </select>
                             </div>
-                            
                             <div id="todo-category-area" style="display: none; margin-bottom: 10px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">カテゴリ</label>
-                                <select id="todo-category" style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #f8f9fa;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">カテゴリ</label>
+                                <select id="todo-category" style="width: 100%; padding: 8px; box-sizing: border-box;">
                                     <option value="貴重品">貴重品</option>
                                     <option value="衣類">衣類</option>
                                     <option value="衛生・身だしなみ品">衛生・身だしなみ品</option>
@@ -282,9 +247,8 @@
                                     <option value="その他">その他</option>
                                 </select>
                             </div>
-
                             <div style="margin-bottom: 15px;">
-                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">内容</label>
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">内容</label>
                                 <input type="text" id="todo-content" required placeholder="例：パスポート、ホテル予約など" style="width: 100%; padding: 8px; box-sizing: border-box;">
                             </div>
                             <button type="submit" id="btn-submit-todo" style="width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">追加</button>
@@ -292,16 +256,13 @@
                     </div>
                 </div>
             </div>
-
             <div class="list-column">
                 <div class="card">
                     <h2 style="display: flex; justify-content: space-between; align-items: center;">
                         準備・持ち物リスト
-                        <button onclick="loadTodo(true)" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">最新を取得</button>
+                        <button onclick="loadTodo(true)" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer; color: var(--text-main); background: var(--input-bg); border: 1px solid var(--border-color);">最新を取得</button>
                     </h2>
-                    <div id="todo-list">
-                        <p style="text-align: center; color: #666;">読み込み中...</p>
-                    </div>
+                    <div id="todo-list"><p style="text-align: center; color: var(--text-muted);">読み込み中...</p></div>
                 </div>
             </div>
         </div>
@@ -312,7 +273,7 @@
         <div class="card" style="text-align: center;">
             <h2 style="display: flex; justify-content: space-between; align-items: center;">
                 予算と支出のバランス
-                <button onclick="renderDashboard()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">更新</button>
+                <button onclick="renderDashboard()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer; color: var(--text-main); background: var(--input-bg); border: 1px solid var(--border-color);">更新</button>
             </h2>
             <div style="position: relative; height: 260px; width: 100%; margin-bottom: 20px;">
                 <canvas id="budgetChart"></canvas>
@@ -331,90 +292,75 @@
     <div id="tab-settings" class="content-area">
         <div class="card">
             <h2>アプリ設定</h2>
-            <p style="font-size: 0.9em; color: #666;">旅行ごとにこの設定を変更すれば，同じアプリをずっと使い回せます．</p>
+            <p style="font-size: 0.9em; color: var(--text-muted);">旅行ごとにこの設定を変更すれば，同じアプリをずっと使い回せます．</p>
             <form id="settings-form">
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">旅行のタイトル (任意)</label>
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">旅行のタイトル (任意)</label>
                     <input type="text" id="set-trip-title" placeholder="例：春のヨーロッパ周遊旅行" style="width: 100%; padding: 8px; box-sizing: border-box;">
                 </div>
                 <div style="margin-bottom: 10px;">
-                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">GAS ウェブアプリURL</label>
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">GAS ウェブアプリURL</label>
                     <input type="url" id="set-url" required placeholder="https://script.google.com/..." style="width: 100%; padding: 8px; box-sizing: border-box;">
                 </div>
-
-                <div style="margin-bottom: 15px; padding: 15px; background-color: #fff3cd; border: 1px solid #f5c2c7; border-radius: 5px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 5px; color: #842029;">旅行開始日 (この日以降は自動通信を停止しデータ量を節約)</label>
+                <div style="margin-bottom: 15px; padding: 15px; background-color: var(--warn-bg); border: 1px solid var(--warn-border); border-radius: 5px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 5px; color: var(--warn-text);">旅行開始日 (自動通信を停止し節約)</label>
                     <input type="date" id="set-start-date" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                    <p style="font-size: 0.75em; color: #842029; margin-top: 5px; margin-bottom: 0;">※旅行前は常に自動で最新の旅程を読み込みます。</p>
                 </div>
-                
-                <div style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;">
-                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #0056b3;">予算・支出の基本設定（外貨・日数）</label>
+                <div style="margin-bottom: 15px; padding: 15px; background-color: var(--input-bg); border: 1px solid var(--border-color); border-radius: 5px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: var(--primary-color);">予算・支出の基本設定</label>
                     <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨1の名前 (例: EUR)</label>
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">外貨1の名前 (例: EUR)</label>
                         <input type="text" id="set-curr1-name" required placeholder="例: EUR" style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨1のレート (1外貨=何円?)</label>
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">外貨1のレート (1外貨=何円?)</label>
                         <input type="number" id="set-rate-curr1" step="any" required placeholder="例: 165" style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨2の名前 (使わない場合は空欄)</label>
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">外貨2の名前 (空欄可)</label>
                         <input type="text" id="set-curr2-name" placeholder="例: MAD" style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
                     <div style="margin-bottom: 10px;">
-                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨2のレート</label>
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">外貨2のレート</label>
                         <input type="number" id="set-rate-curr2" step="any" placeholder="例: 17.13" style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
                     <div>
-                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">旅行日数 (基準となる日数)</label>
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">旅行日数</label>
                         <input type="number" id="set-days" step="any" required placeholder="例: 15" style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
                 </div>
-                
                 <div style="margin-bottom: 10px; display: flex; gap: 10px;">
                     <div style="flex: 1;">
-                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">基本の年</label>
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">基本の年</label>
                         <select id="set-year" required style="width: 100%; padding: 8px; box-sizing: border-box;"></select>
                     </div>
                     <div style="flex: 1;">
-                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">月 (1つ目)</label>
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">月1</label>
                         <select id="set-month1" required style="width: 100%; padding: 8px; box-sizing: border-box;"></select>
                     </div>
                     <div style="flex: 1;">
-                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">月 (任意)</label>
-                        <select id="set-month2" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                            <option value="">なし</option>
-                        </select>
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">月2</label>
+                        <select id="set-month2" style="width: 100%; padding: 8px; box-sizing: border-box;"><option value="">なし</option></select>
                     </div>
                 </div>
-                
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">旅行メンバー</label>
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">旅行メンバー</label>
                     <div id="member-inputs-container"></div>
-                    <button type="button" id="btn-add-member" style="margin-top: 5px; width: 100%; padding: 10px; background-color: #e2e6ea; color: #333; border: 1px dashed #ccc; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold;">＋ メンバーを追加</button>
+                    <button type="button" id="btn-add-member" style="margin-top: 5px; width: 100%; padding: 10px; background-color: var(--btn-bg); color: var(--text-main); border: 1px dashed var(--border-color); border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold;">＋ メンバーを追加</button>
                 </div>
-                
-                <div style="margin-bottom: 15px; padding: 10px; background-color: #e6f7ff; border: 1px solid #99c2ff; border-radius: 5px;">
-                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; font-weight: bold; color: #0056b3;">自分の名前 (支出の支払者の初期値・持ち物チェック用)</label>
-                    <select id="set-myself" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                        <option value="">未設定</option>
-                    </select>
-                    <p style="font-size: 0.75em; color: #666; margin-top: 5px; margin-bottom: 0;">※この設定は端末ごとに保存されるため、共有URLには含まれません。</p>
+                <div style="margin-bottom: 15px; padding: 10px; background-color: var(--highlight-bg); border: 1px solid var(--highlight-border); border-radius: 5px;">
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; font-weight: bold; color: var(--primary-color);">自分の名前</label>
+                    <select id="set-myself" style="width: 100%; padding: 8px; box-sizing: border-box;"><option value="">未設定</option></select>
                 </div>
-
                 <div style="margin-bottom: 15px;">
-                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">滞在都市 (宿泊・色分け用)</label>
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: var(--text-main);">滞在都市 (色分け用)</label>
                     <div id="city-inputs-container"></div>
-                    <button type="button" id="btn-add-city" style="margin-top: 5px; width: 100%; padding: 10px; background-color: #e2e6ea; color: #333; border: 1px dashed #ccc; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold;">＋ 滞在都市を追加</button>
+                    <button type="button" id="btn-add-city" style="margin-top: 5px; width: 100%; padding: 10px; background-color: var(--btn-bg); color: var(--text-main); border: 1px dashed var(--border-color); border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold;">＋ 滞在都市を追加</button>
                 </div>
-
                 <button type="submit" style="width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">設定を保存して更新</button>
             </form>
-
-            <div id="share-section" style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed #ccc; display: none;">
-                <p style="font-size: 0.9em; margin-top: 0; margin-bottom: 8px;"><strong>📱 メンバーに設定を共有</strong></p>
-                <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">このボタンを押してURLをコピーし，LINE等でメンバーに送ってください．相手がURLを開くと自動で設定が完了します．</p>
+            <div id="share-section" style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed var(--border-color); display: none;">
+                <p style="font-size: 0.9em; margin-top: 0; margin-bottom: 8px; color: var(--text-main);"><strong>📱 メンバーに設定を共有</strong></p>
                 <button type="button" id="btn-share-settings" style="width: 100%; padding: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🔗 共有用URLをコピー</button>
             </div>
         </div>
@@ -435,19 +381,9 @@
     <script src="expense.js?v=6"></script>
     <script src="todo.js?v=6"></script>
     <script src="dashboard.js?v=6"></script>
-
-    <!-- サービスワーカーの登録 -->
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registered:', registration.scope);
-                    })
-                    .catch(error => {
-                        console.log('ServiceWorker registration failed:', error);
-                    });
-            });
+            window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js'); });
         }
     </script>
 </body>

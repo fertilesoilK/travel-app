@@ -1,16 +1,63 @@
-/* スマホ向けの基本スタイル */
+/* スマホ向けの基本スタイルと変数定義 */
+:root {
+    --bg-color: #f5f7fa;
+    --text-main: #333333;
+    --text-muted: #666666;
+    --card-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --primary-color: #0056b3;
+    --accent-color: #d63384;
+    --input-bg: #f8f9fa;
+    --input-border: #cccccc;
+    --highlight-bg: #e6f7ff;
+    --highlight-border: #99c2ff;
+    --warn-bg: #fff3cd;
+    --warn-border: #f5c2c7;
+    --warn-text: #842029;
+    --nav-bg: #ffffff;
+    --success-bg: #e8f5e9;
+    --success-text: #28a745;
+    
+    --city-c0: #fff9e6; --city-c1: #e1f5fe; --city-c2: #e8f5e9; --city-c3: #ffebee; --city-c4: #f3e5f5;
+    --city-c5: #fff3e0; --city-c6: #e0f7fa; --city-c7: #fbe9e7; --city-c8: #f0f4c3; --city-c9: #ede7f6;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #121212;
+        --text-main: #e0e0e0;
+        --text-muted: #aaaaaa;
+        --card-bg: #1e1e1e;
+        --border-color: #333333;
+        --primary-color: #66b2ff;
+        --accent-color: #ff66a3;
+        --input-bg: #2c2c2c;
+        --input-border: #444444;
+        --highlight-bg: #1a365d;
+        --highlight-border: #004085;
+        --warn-bg: #4d3800;
+        --warn-border: #664d03;
+        --warn-text: #ffda6a;
+        --nav-bg: #1e1e1e;
+        --success-bg: #1f3622;
+        --success-text: #4caf50;
+
+        --city-c0: #3a311b; --city-c1: #1a3644; --city-c2: #1f3622; --city-c3: #3d1f23; --city-c4: #35213b;
+        --city-c5: #3d2a12; --city-c6: #1b3b3f; --city-c7: #3b221d; --city-c8: #33381a; --city-c9: #2e253c;
+    }
+}
+
 body {
     font-family: 'Helvetica Neue', Arial, sans-serif;
-    background-color: #f5f7fa;
-    color: #333;
+    background-color: var(--bg-color);
+    color: var(--text-main);
     margin: 0;
     padding: 0;
     padding-bottom: 70px;
 }
 
-/* ヘッダー */
 header {
-    background-color: #0056b3;
+    background-color: var(--primary-color);
     color: white;
     text-align: center;
     padding: 15px 0;
@@ -22,7 +69,6 @@ header {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* コンテンツエリア */
 .content-area {
     padding: 15px;
     display: none;
@@ -32,21 +78,23 @@ header {
     display: block;
 }
 
-/* 見出し */
 h2 {
     font-size: 1.2em;
-    border-bottom: 2px solid #0056b3;
+    border-bottom: 2px solid var(--primary-color);
     padding-bottom: 5px;
     margin-top: 0;
+    color: var(--text-main);
+}
+h3, h4, p {
+    color: var(--text-main);
 }
 
-/* 下部ナビゲーション（タブ） */
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: #ffffff;
+    background-color: var(--nav-bg);
     display: flex;
     box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
     z-index: 1000;
@@ -56,7 +104,7 @@ h2 {
     flex: 1;
     text-align: center;
     padding: 12px 0;
-    color: #666;
+    color: var(--text-muted);
     cursor: pointer;
     font-size: 0.9em;
     font-weight: bold;
@@ -65,76 +113,55 @@ h2 {
 }
 
 .nav-item.active {
-    color: #0056b3;
-    border-top: 3px solid #0056b3;
-    background-color: #e6f7ff;
+    color: var(--primary-color);
+    border-top: 3px solid var(--primary-color);
+    background-color: var(--highlight-bg);
 }
 
-/* 共通のカードスタイル */
 .card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 15px;
     margin-bottom: 15px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    border: 1px solid var(--border-color);
 }
 
-/* =========================================
-   パソコン・スマホごとのレイアウト調整
-========================================= */
+/* フォーム要素のダークモード対応 */
+input, select, textarea {
+    background-color: var(--input-bg) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--input-border) !important;
+}
 
-/* パソコン向けのレイアウト（画面幅768px以上） */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(0);
+}
+
+@media (prefers-color-scheme: dark) {
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+    }
+}
+
+/* パソコン・スマホごとのレイアウト調整 */
 @media (min-width: 768px) {
-    body {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding-top: 10px;
-    }
-    
-    /* 2列に並べるための設定 */
-    .two-column-layout {
-        display: flex;
-        gap: 20px;
-        align-items: flex-start;
-    }
-    
-    .form-column {
-        flex: 1;
-        position: sticky; /* スクロールしても入力フォームが画面内に追従する */
-        top: 75px; 
-    }
-    
-    .list-column {
-        flex: 1.5; /* 一覧の方を少し広くする */
-    }
-
-    .toggle-form-btn {
-        display: none; /* PCでは常に表示するのでボタンは隠す */
-    }
-    
-    .collapsible-form {
-        display: block !important; /* PCではフォームを常に表示 */
-    }
+    body { max-width: 1000px; margin: 0 auto; padding-top: 10px; }
+    .two-column-layout { display: flex; gap: 20px; align-items: flex-start; }
+    .form-column { flex: 1; position: sticky; top: 75px; }
+    .list-column { flex: 1.5; }
+    .toggle-form-btn { display: none; }
+    .collapsible-form { display: block !important; }
 }
 
-/* スマホ向けの折りたたみボタン（画面幅767px以下） */
 @media (max-width: 767px) {
     .toggle-form-btn {
-        display: block;
-        width: 100%;
-        padding: 12px;
-        background-color: #e6f7ff;
-        color: #0056b3;
-        border: 2px solid #0056b3;
-        border-radius: 8px;
-        font-size: 1.05em;
-        font-weight: bold;
-        margin-bottom: 15px;
-        cursor: pointer;
-        text-align: center;
+        display: block; width: 100%; padding: 12px;
+        background-color: var(--highlight-bg); color: var(--primary-color);
+        border: 2px solid var(--primary-color); border-radius: 8px;
+        font-size: 1.05em; font-weight: bold; margin-bottom: 15px; cursor: pointer; text-align: center;
     }
-    
-    .collapsible-form {
-        display: none; /* スマホでは初期状態でフォームを隠す */
-    }
+    .collapsible-form { display: none; }
 }

@@ -163,17 +163,9 @@ function updateCurrencyDropdowns() {
     const bgCur = document.getElementById('bg-currency');
     const expCur = document.getElementById('exp-currency');
     let html = '';
-    
-    if (APP_CONFIG.curr1Name) {
-        html += '<option value="' + APP_CONFIG.curr1Name + '">' + APP_CONFIG.curr1Name + '</option>';
-    }
-    
+    if (APP_CONFIG.curr1Name) html += '<option value="' + APP_CONFIG.curr1Name + '">' + APP_CONFIG.curr1Name + '</option>';
     html += '<option value="円">日本円 (¥)</option>';
-    
-    if (APP_CONFIG.curr2Name) {
-        html += '<option value="' + APP_CONFIG.curr2Name + '">' + APP_CONFIG.curr2Name + '</option>';
-    }
-    
+    if (APP_CONFIG.curr2Name) html += '<option value="' + APP_CONFIG.curr2Name + '">' + APP_CONFIG.curr2Name + '</option>';
     if (bgCur) bgCur.innerHTML = html;
     if (expCur) expCur.innerHTML = html;
 }
@@ -182,20 +174,17 @@ const settingsForm = document.getElementById('settings-form');
 if (settingsForm) {
     settingsForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
         const tripTitle = document.getElementById('set-trip-title').value.trim();
         const url = document.getElementById('set-url').value;
         const startDate = document.getElementById('set-start-date').value;
         const year = document.getElementById('set-year').value;
         const m1 = document.getElementById('set-month1').value;
         const m2 = document.getElementById('set-month2').value;
-        
         const curr1Name = document.getElementById('set-curr1-name').value.trim();
         const rateCurr1 = document.getElementById('set-rate-curr1').value;
         const curr2Name = document.getElementById('set-curr2-name').value.trim();
         const rateCurr2 = document.getElementById('set-rate-curr2').value;
         const baseDays = document.getElementById('set-days').value;
-        
         const mySelf = document.getElementById('set-myself').value;
         
         const memberInputs = document.querySelectorAll('.member-input');
@@ -218,29 +207,16 @@ if (settingsForm) {
         }
         
         APP_CONFIG = {
-            gasUrl: url,
-            tripTitle: tripTitle,
-            startDate: startDate,
-            defaultYear: parseInt(year),
-            month1: parseInt(m1),
-            month2: m2 ? parseInt(m2) : "",
-            travelers: membersArray,
-            stayCities: citiesArray,
-            curr1Name: curr1Name,
-            curr1Rate: parseFloat(rateCurr1),
-            curr2Name: curr2Name,
-            curr2Rate: parseFloat(rateCurr2) || 0,
-            baseDays: parseFloat(baseDays),
-            mySelf: mySelf
+            gasUrl: url, tripTitle: tripTitle, startDate: startDate,
+            defaultYear: parseInt(year), month1: parseInt(m1), month2: m2 ? parseInt(m2) : "",
+            travelers: membersArray, stayCities: citiesArray,
+            curr1Name: curr1Name, curr1Rate: parseFloat(rateCurr1),
+            curr2Name: curr2Name, curr2Rate: parseFloat(rateCurr2) || 0,
+            baseDays: parseFloat(baseDays), mySelf: mySelf
         };
-        
         localStorage.setItem('trip_app_config', JSON.stringify(APP_CONFIG));
-        
-        localStorage.removeItem('cache_schedule');
-        localStorage.removeItem('cache_budget');
-        localStorage.removeItem('cache_expense');
-        localStorage.removeItem('cache_todo');
-        
+        localStorage.removeItem('cache_schedule'); localStorage.removeItem('cache_budget');
+        localStorage.removeItem('cache_expense'); localStorage.removeItem('cache_todo');
         alert('設定を保存しました！画面を更新します．');
         location.reload();
     });
@@ -258,7 +234,6 @@ if (btnShareSettings) {
         if (APP_CONFIG.month2) shareUrl.searchParams.set('setup_m2', APP_CONFIG.month2);
         shareUrl.searchParams.set('setup_members', APP_CONFIG.travelers.join(','));
         shareUrl.searchParams.set('setup_cities', APP_CONFIG.stayCities.join(','));
-        
         shareUrl.searchParams.set('s_c1n', APP_CONFIG.curr1Name);
         shareUrl.searchParams.set('s_c1r', APP_CONFIG.curr1Rate);
         shareUrl.searchParams.set('s_c2n', APP_CONFIG.curr2Name);
@@ -273,16 +248,14 @@ if (btnShareSettings) {
     });
 }
 
-// --- オフライン自動同期システム ---
 window.syncQueue = JSON.parse(localStorage.getItem('offline_sync_queue')) || [];
-
 window.updateSyncBadge = function() {
     const badge = document.getElementById('sync-badge');
     if (badge) {
         if (window.syncQueue.length > 0) {
             badge.style.display = 'inline-block';
-            badge.style.backgroundColor = '#ffc107';
-            badge.style.color = '#000';
+            badge.style.backgroundColor = 'var(--warn-bg)';
+            badge.style.color = 'var(--warn-text)';
             badge.innerText = `未送信: ${window.syncQueue.length}件`;
         } else {
             badge.style.display = 'none';
@@ -298,7 +271,6 @@ window.enqueueSync = function(payload) {
 
 window.processSyncQueue = async function() {
     if (!navigator.onLine || window.syncQueue.length === 0) return;
-    
     const badge = document.getElementById('sync-badge');
     if (badge) {
         badge.style.display = 'inline-block';
@@ -306,30 +278,22 @@ window.processSyncQueue = async function() {
         badge.style.color = '#fff';
         badge.innerText = '同期中...';
     }
-
     const queueCopy = [...window.syncQueue];
     window.syncQueue = []; 
     localStorage.setItem('offline_sync_queue', JSON.stringify(window.syncQueue));
-
     let hasError = false;
-
     for (const payload of queueCopy) {
         try {
-            await fetch(APP_CONFIG.gasUrl, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
+            await fetch(APP_CONFIG.gasUrl, { method: 'POST', body: JSON.stringify(payload) });
         } catch (e) {
             window.syncQueue.push(payload);
             hasError = true;
         }
     }
-    
     localStorage.setItem('offline_sync_queue', JSON.stringify(window.syncQueue));
     window.updateSyncBadge();
-    
     if (!hasError && badge) {
-        badge.style.backgroundColor = '#28a745';
+        badge.style.backgroundColor = 'var(--success-text)';
         badge.innerText = '同期完了!';
         setTimeout(() => window.updateSyncBadge(), 2500);
     }
@@ -337,50 +301,32 @@ window.processSyncQueue = async function() {
 
 window.safeFetch = function(payload) {
     if (!APP_CONFIG.gasUrl) return;
-    
     if (navigator.onLine) {
-        fetch(APP_CONFIG.gasUrl, {
-            method: 'POST',
-            body: JSON.stringify(payload)
-        }).catch(() => {
-            window.enqueueSync(payload);
-        });
+        fetch(APP_CONFIG.gasUrl, { method: 'POST', body: JSON.stringify(payload) })
+        .catch(() => { window.enqueueSync(payload); });
     } else {
         window.enqueueSync(payload);
     }
 };
 
-window.addEventListener('online', () => {
-    window.processSyncQueue();
-});
-// ----------------------------------
+window.addEventListener('online', () => { window.processSyncQueue(); });
 
 window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.has('setup_gas') && params.has('setup_year') && params.has('setup_m1') && params.has('setup_members')) {
         APP_CONFIG = {
-            gasUrl: params.get('setup_gas'),
-            tripTitle: params.has('setup_title') ? params.get('setup_title') : "",
+            gasUrl: params.get('setup_gas'), tripTitle: params.has('setup_title') ? params.get('setup_title') : "",
             startDate: params.has('s_sd_date') ? params.get('s_sd_date') : "",
-            defaultYear: parseInt(params.get('setup_year')),
-            month1: parseInt(params.get('setup_m1')),
+            defaultYear: parseInt(params.get('setup_year')), month1: parseInt(params.get('setup_m1')),
             month2: params.get('setup_m2') ? parseInt(params.get('setup_m2')) : "",
-            travelers: params.get('setup_members').split(','),
-            stayCities: params.has('setup_cities') ? params.get('setup_cities').split(',') : [],
-            curr1Name: params.has('s_c1n') ? params.get('s_c1n') : "EUR",
-            curr1Rate: params.has('s_c1r') ? parseFloat(params.get('s_c1r')) : 165,
-            curr2Name: params.has('s_c2n') ? params.get('s_c2n') : "MAD",
-            curr2Rate: params.has('s_c2r') ? parseFloat(params.get('s_c2r')) : 15,
-            baseDays: params.has('s_d') ? parseFloat(params.get('s_d')) : 15,
-            mySelf: APP_CONFIG.mySelf 
+            travelers: params.get('setup_members').split(','), stayCities: params.has('setup_cities') ? params.get('setup_cities').split(',') : [],
+            curr1Name: params.has('s_c1n') ? params.get('s_c1n') : "EUR", curr1Rate: params.has('s_c1r') ? parseFloat(params.get('s_c1r')) : 165,
+            curr2Name: params.has('s_c2n') ? params.get('s_c2n') : "MAD", curr2Rate: params.has('s_c2r') ? parseFloat(params.get('s_c2r')) : 15,
+            baseDays: params.has('s_d') ? parseFloat(params.get('s_d')) : 15, mySelf: APP_CONFIG.mySelf 
         };
         localStorage.setItem('trip_app_config', JSON.stringify(APP_CONFIG));
-        
-        localStorage.removeItem('cache_schedule');
-        localStorage.removeItem('cache_budget');
-        localStorage.removeItem('cache_expense');
-        localStorage.removeItem('cache_todo');
-        
+        localStorage.removeItem('cache_schedule'); localStorage.removeItem('cache_budget');
+        localStorage.removeItem('cache_expense'); localStorage.removeItem('cache_todo');
         window.history.replaceState(null, '', window.location.pathname);
         alert('共有された設定を読み込みました！');
         location.reload();
@@ -391,89 +337,52 @@ window.addEventListener('DOMContentLoaded', () => {
     if (yearSelect) {
         const currentYear = new Date().getFullYear();
         for (let y = currentYear - 1; y <= currentYear + 5; y++) {
-            const opt = document.createElement('option');
-            opt.value = y;
-            opt.textContent = y + "年";
+            const opt = document.createElement('option'); opt.value = y; opt.textContent = y + "年";
             yearSelect.appendChild(opt);
         }
     }
-    
     const m1Select = document.getElementById('set-month1');
     const m2Select = document.getElementById('set-month2');
     if (m1Select && m2Select) {
         for (let m = 1; m <= 12; m++) {
-            const opt1 = document.createElement('option');
-            opt1.value = m;
-            opt1.textContent = m + "月";
-            m1Select.appendChild(opt1);
-            
-            const opt2 = document.createElement('option');
-            opt2.value = m;
-            opt2.textContent = m + "月";
-            m2Select.appendChild(opt2);
+            const opt1 = document.createElement('option'); opt1.value = m; opt1.textContent = m + "月"; m1Select.appendChild(opt1);
+            const opt2 = document.createElement('option'); opt2.value = m; opt2.textContent = m + "月"; m2Select.appendChild(opt2);
         }
     }
 
-    const setTripTitleEl = document.getElementById('set-trip-title');
-    if (setTripTitleEl) setTripTitleEl.value = APP_CONFIG.tripTitle || "";
-    
-    const setUrlEl = document.getElementById('set-url');
-    if (setUrlEl) setUrlEl.value = APP_CONFIG.gasUrl || "";
-    
-    const setStartDateEl = document.getElementById('set-start-date');
-    if (setStartDateEl) setStartDateEl.value = APP_CONFIG.startDate || "";
-
+    const setTripTitleEl = document.getElementById('set-trip-title'); if (setTripTitleEl) setTripTitleEl.value = APP_CONFIG.tripTitle || "";
+    const setUrlEl = document.getElementById('set-url'); if (setUrlEl) setUrlEl.value = APP_CONFIG.gasUrl || "";
+    const setStartDateEl = document.getElementById('set-start-date'); if (setStartDateEl) setStartDateEl.value = APP_CONFIG.startDate || "";
     if (yearSelect) yearSelect.value = APP_CONFIG.defaultYear;
     if (m1Select) m1Select.value = APP_CONFIG.month1 || 1;
     if (m2Select) m2Select.value = APP_CONFIG.month2 || "";
-    
-    const curr1NameEl = document.getElementById('set-curr1-name');
-    if (curr1NameEl) curr1NameEl.value = APP_CONFIG.curr1Name || "";
-    
-    const rateCurr1El = document.getElementById('set-rate-curr1');
-    if (rateCurr1El) rateCurr1El.value = APP_CONFIG.curr1Rate || "";
-    
-    const curr2NameEl = document.getElementById('set-curr2-name');
-    if (curr2NameEl) curr2NameEl.value = APP_CONFIG.curr2Name || "";
-    
-    const rateCurr2El = document.getElementById('set-rate-curr2');
-    if (rateCurr2El) rateCurr2El.value = APP_CONFIG.curr2Rate || "";
-    
-    const setDaysEl = document.getElementById('set-days');
-    if (setDaysEl) setDaysEl.value = APP_CONFIG.baseDays || 15;
+    const curr1NameEl = document.getElementById('set-curr1-name'); if (curr1NameEl) curr1NameEl.value = APP_CONFIG.curr1Name || "";
+    const rateCurr1El = document.getElementById('set-rate-curr1'); if (rateCurr1El) rateCurr1El.value = APP_CONFIG.curr1Rate || "";
+    const curr2NameEl = document.getElementById('set-curr2-name'); if (curr2NameEl) curr2NameEl.value = APP_CONFIG.curr2Name || "";
+    const rateCurr2El = document.getElementById('set-rate-curr2'); if (rateCurr2El) rateCurr2El.value = APP_CONFIG.curr2Rate || "";
+    const setDaysEl = document.getElementById('set-days'); if (setDaysEl) setDaysEl.value = APP_CONFIG.baseDays || 15;
     
     if (membersContainer) {
         membersContainer.innerHTML = '';
-        if (APP_CONFIG.travelers && APP_CONFIG.travelers.length > 0) {
-            APP_CONFIG.travelers.forEach(name => createMemberInput(name));
-        } else {
-            createMemberInput(); 
-        }
+        if (APP_CONFIG.travelers && APP_CONFIG.travelers.length > 0) APP_CONFIG.travelers.forEach(name => createMemberInput(name));
+        else createMemberInput(); 
     }
-    
     updateMySelfOptions();
-
     if (citiesContainer) {
         citiesContainer.innerHTML = '';
-        if (APP_CONFIG.stayCities && APP_CONFIG.stayCities.length > 0) {
-            APP_CONFIG.stayCities.forEach(city => createCityInput(city));
-        } else {
-            createCityInput(); 
-        }
+        if (APP_CONFIG.stayCities && APP_CONFIG.stayCities.length > 0) APP_CONFIG.stayCities.forEach(city => createCityInput(city));
+        else createCityInput(); 
     }
-    
     configureDateInputs();
     updateCurrencyDropdowns();
 
     if (APP_CONFIG.gasUrl) {
         const shareSection = document.getElementById('share-section');
         if (shareSection) shareSection.style.display = 'block';
-        
         if (typeof loadSchedule === 'function') loadSchedule();
         if (typeof loadBudget === 'function') loadBudget();
         if (typeof loadExpenses === 'function') loadExpenses();
         if (typeof loadTodo === 'function') loadTodo(true);
-        
         const headerTitle = APP_CONFIG.tripTitle ? APP_CONFIG.tripTitle + ' - 旅程' : '旅程';
         document.getElementById('app-header').innerText = headerTitle;
     } else {
@@ -481,12 +390,10 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     window.updateSyncBadge();
-    if (navigator.onLine) {
-        setTimeout(window.processSyncQueue, 1500);
-    }
+    if (navigator.onLine) setTimeout(window.processSyncQueue, 1500);
 });
 
-// --- スワイプ操作の実装 ---
+// スワイプ操作の制御
 const swipeStyle = document.createElement('style');
 swipeStyle.innerHTML = `
     .swipe-container { position: relative; overflow: hidden; width: 100%; touch-action: pan-y; }
@@ -495,64 +402,44 @@ swipeStyle.innerHTML = `
 `;
 document.head.appendChild(swipeStyle);
 
-let swipeStartX = 0;
-let swipeStartY = 0;
-let swipedElement = null;
+let swipeStartX = 0; let swipeStartY = 0; let swipedElement = null;
 
 document.addEventListener('touchstart', e => {
     const el = e.target.closest('.swipe-content');
-    
-    if (swipedElement && swipedElement !== el) {
-        swipedElement.style.transform = 'translateX(0px)';
-        swipedElement = null;
-    }
-    
+    if (swipedElement && swipedElement !== el) { swipedElement.style.transform = 'translateX(0px)'; swipedElement = null; }
     if (!el) return;
-    swipeStartX = e.touches[0].clientX;
-    swipeStartY = e.touches[0].clientY;
+    swipeStartX = e.touches[0].clientX; swipeStartY = e.touches[0].clientY;
     el.style.transition = 'none'; 
 }, {passive: true});
 
 document.addEventListener('touchmove', e => {
     const el = e.target.closest('.swipe-content');
     if (!el || swipeStartX === 0) return;
-    
     const diffX = e.touches[0].clientX - swipeStartX;
     const diffY = e.touches[0].clientY - swipeStartY;
-
     if (Math.abs(diffY) > Math.abs(diffX)) return;
     
     const actions = el.nextElementSibling;
     const actionsWidth = actions ? actions.offsetWidth : 80;
 
-    if (diffX < 0) {
-        const moveX = Math.max(diffX, -actionsWidth);
-        el.style.transform = `translateX(${moveX}px)`;
-    } else if (diffX > 0 && swipedElement === el) {
-        const moveX = Math.min(diffX - actionsWidth, 0);
-        el.style.transform = `translateX(${moveX}px)`;
-    }
+    if (diffX < 0) { el.style.transform = `translateX(${Math.max(diffX, -actionsWidth)}px)`; } 
+    else if (diffX > 0 && swipedElement === el) { el.style.transform = `translateX(${Math.min(diffX - actionsWidth, 0)}px)`; }
 }, {passive: true});
 
 document.addEventListener('touchend', e => {
     const el = e.target.closest('.swipe-content');
     if (!el || swipeStartX === 0) return;
-    
     el.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1)';
-    
     const diffX = e.changedTouches[0].clientX - swipeStartX;
     const diffY = e.changedTouches[0].clientY - swipeStartY;
     
     if (Math.abs(diffX) > Math.abs(diffY)) {
         const actions = el.nextElementSibling;
         const actionsWidth = actions ? actions.offsetWidth : 80;
-
         if (diffX < -30 || (diffX < 0 && swipedElement === el)) { 
-            el.style.transform = `translateX(-${actionsWidth}px)`;
-            swipedElement = el;
+            el.style.transform = `translateX(-${actionsWidth}px)`; swipedElement = el;
         } else { 
-            el.style.transform = 'translateX(0px)';
-            if (swipedElement === el) swipedElement = null;
+            el.style.transform = 'translateX(0px)'; if (swipedElement === el) swipedElement = null;
         }
     } else if (swipedElement === el) {
         const actions = el.nextElementSibling;

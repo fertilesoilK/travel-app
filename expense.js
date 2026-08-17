@@ -7,92 +7,50 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (APP_CONFIG.travelers && APP_CONFIG.travelers.length > 0) {
         APP_CONFIG.travelers.forEach(name => {
-            const option1 = document.createElement('option');
-            option1.value = name;
-            option1.textContent = name;
-            if(payerSelect) payerSelect.appendChild(option1);
-
-            const option2 = document.createElement('option');
-            option2.value = name;
-            option2.textContent = name;
-            if(filterSelect) filterSelect.appendChild(option2);
+            const option1 = document.createElement('option'); option1.value = name; option1.textContent = name; if(payerSelect) payerSelect.appendChild(option1);
+            const option2 = document.createElement('option'); option2.value = name; option2.textContent = name; if(filterSelect) filterSelect.appendChild(option2);
         });
-        
-        if (payerSelect && APP_CONFIG.mySelf) {
-            payerSelect.value = APP_CONFIG.mySelf;
-        }
+        if (payerSelect && APP_CONFIG.mySelf) payerSelect.value = APP_CONFIG.mySelf;
     }
 
-    if (filterSelect) {
-        filterSelect.addEventListener('change', () => {
-            renderExpenseList();
-        });
-    }
+    if (filterSelect) { filterSelect.addEventListener('change', () => { renderExpenseList(); }); }
 
     if (targetContainer && APP_CONFIG.travelers && APP_CONFIG.travelers.length > 0) {
         targetContainer.innerHTML = '';
-        
         const allLabel = document.createElement('label');
-        allLabel.style.cssText = 'display: flex; align-items: center; gap: 5px; background: #f8f9fa; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; cursor: pointer; border: 1px solid #ccc; font-weight: bold; color: #666; transition: 0.2s;';
-        const allCb = document.createElement('input');
-        allCb.type = 'checkbox';
-        allCb.value = '全員';
-        allCb.checked = false;
-        allCb.style.display = 'none';
-        allLabel.appendChild(allCb);
-        allLabel.appendChild(document.createTextNode('全員'));
-        targetContainer.appendChild(allLabel);
+        allLabel.style.cssText = 'display: flex; align-items: center; gap: 5px; background: var(--input-bg); padding: 6px 12px; border-radius: 20px; font-size: 0.85em; cursor: pointer; border: 1px solid var(--border-color); font-weight: bold; color: var(--text-muted); transition: 0.2s;';
+        const allCb = document.createElement('input'); allCb.type = 'checkbox'; allCb.value = '全員'; allCb.checked = false; allCb.style.display = 'none';
+        allLabel.appendChild(allCb); allLabel.appendChild(document.createTextNode('全員')); targetContainer.appendChild(allLabel);
 
         const memberCbs = [];
-        
         APP_CONFIG.travelers.forEach(name => {
             const lbl = document.createElement('label');
-            lbl.style.cssText = 'display: flex; align-items: center; gap: 5px; background: #f8f9fa; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; cursor: pointer; border: 1px solid #ccc; font-weight: bold; color: #666; transition: 0.2s;';
-            const cb = document.createElement('input');
-            cb.type = 'checkbox';
-            cb.value = name;
-            cb.className = 'target-member';
-            cb.checked = false;
-            cb.style.display = 'none';
-            lbl.appendChild(cb);
-            lbl.appendChild(document.createTextNode(name));
-            targetContainer.appendChild(lbl);
-            memberCbs.push({cb, lbl});
+            lbl.style.cssText = 'display: flex; align-items: center; gap: 5px; background: var(--input-bg); padding: 6px 12px; border-radius: 20px; font-size: 0.85em; cursor: pointer; border: 1px solid var(--border-color); font-weight: bold; color: var(--text-muted); transition: 0.2s;';
+            const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = name; cb.className = 'target-member'; cb.checked = false; cb.style.display = 'none';
+            lbl.appendChild(cb); lbl.appendChild(document.createTextNode(name)); targetContainer.appendChild(lbl); memberCbs.push({cb, lbl});
             
             cb.addEventListener('change', () => {
                 if (cb.checked) {
-                    lbl.style.backgroundColor = '#e6f7ff';
-                    lbl.style.borderColor = '#0056b3';
-                    lbl.style.color = '#0056b3';
-                    if (memberCbs.every(m => m.cb.checked)) {
-                        allCb.checked = true;
-                        allLabel.style.backgroundColor = '#e6f7ff';
-                        allLabel.style.borderColor = '#0056b3';
-                        allLabel.style.color = '#0056b3';
-                    }
+                    lbl.style.backgroundColor = 'var(--highlight-bg)'; lbl.style.borderColor = 'var(--primary-color)'; lbl.style.color = 'var(--primary-color)';
+                    if (memberCbs.every(m => m.cb.checked)) { allCb.checked = true; allLabel.style.backgroundColor = 'var(--highlight-bg)'; allLabel.style.borderColor = 'var(--primary-color)'; allLabel.style.color = 'var(--primary-color)'; }
                 } else {
-                    lbl.style.backgroundColor = '#f8f9fa';
-                    lbl.style.borderColor = '#ccc';
-                    lbl.style.color = '#666';
-                    allCb.checked = false;
-                    allLabel.style.backgroundColor = '#f8f9fa';
-                    allLabel.style.borderColor = '#ccc';
-                    allLabel.style.color = '#666';
+                    lbl.style.backgroundColor = 'var(--input-bg)'; lbl.style.borderColor = 'var(--border-color)'; lbl.style.color = 'var(--text-muted)';
+                    allCb.checked = false; allLabel.style.backgroundColor = 'var(--input-bg)'; allLabel.style.borderColor = 'var(--border-color)'; allLabel.style.color = 'var(--text-muted)';
                 }
             });
         });
 
         allCb.addEventListener('change', () => {
             const isChecked = allCb.checked;
-            allLabel.style.backgroundColor = isChecked ? '#e6f7ff' : '#f8f9fa';
-            allLabel.style.borderColor = isChecked ? '#0056b3' : '#ccc';
-            allLabel.style.color = isChecked ? '#0056b3' : '#666';
+            allLabel.style.backgroundColor = isChecked ? 'var(--highlight-bg)' : 'var(--input-bg)';
+            allLabel.style.borderColor = isChecked ? 'var(--primary-color)' : 'var(--border-color)';
+            allLabel.style.color = isChecked ? 'var(--primary-color)' : 'var(--text-muted)';
             
             memberCbs.forEach(m => {
                 m.cb.checked = isChecked;
-                m.lbl.style.backgroundColor = isChecked ? '#e6f7ff' : '#f8f9fa';
-                m.lbl.style.borderColor = isChecked ? '#0056b3' : '#ccc';
-                m.lbl.style.color = isChecked ? '#0056b3' : '#666';
+                m.lbl.style.backgroundColor = isChecked ? 'var(--highlight-bg)' : 'var(--input-bg)';
+                m.lbl.style.borderColor = isChecked ? 'var(--primary-color)' : 'var(--border-color)';
+                m.lbl.style.color = isChecked ? 'var(--primary-color)' : 'var(--text-muted)';
             });
         });
     }
@@ -102,11 +60,9 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleBtn.addEventListener('click', () => {
             const wrapper = document.getElementById('exp-form-wrapper');
             if (wrapper.style.display === 'none' || wrapper.style.display === '') {
-                wrapper.style.display = 'block';
-                toggleBtn.innerText = '－ 入力フォームを閉じる';
+                wrapper.style.display = 'block'; toggleBtn.innerText = '－ 入力フォームを閉じる';
             } else {
-                wrapper.style.display = 'none';
-                toggleBtn.innerText = '＋ 支出を追加';
+                wrapper.style.display = 'none'; toggleBtn.innerText = '＋ 支出を追加';
             }
         });
     }
@@ -114,162 +70,99 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadExpenses() {
     if (!APP_CONFIG.gasUrl) return;
-    const listDiv = document.getElementById('expense-list');
-    const settleDiv = document.getElementById('settlement-result');
-
+    const listDiv = document.getElementById('expense-list'); const settleDiv = document.getElementById('settlement-result');
     const cached = localStorage.getItem('cache_expense');
-    if (cached) {
-        expenseData = JSON.parse(cached);
-        renderExpenseList();
-    } else {
-        listDiv.innerHTML = '<p style="text-align: center; color: #666;">読み込み中...</p>';
-        settleDiv.innerHTML = '<p style="text-align: center; color: #666;">計算中...</p>';
-    }
+    if (cached) { expenseData = JSON.parse(cached); renderExpenseList(); }
+    else { listDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted);">読み込み中...</p>'; settleDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted);">計算中...</p>'; }
 
     try {
         const response = await fetch(APP_CONFIG.gasUrl + "?sheet=支出");
         const data = await response.json();
-
-        if (data.error) {
-            if (!cached) {
-                listDiv.innerHTML = `<p style="color: red;">エラー: ${data.error}</p>`;
-                settleDiv.innerHTML = '-';
-            }
-            return;
-        }
-
-        expenseData = data;
-        localStorage.setItem('cache_expense', JSON.stringify(data));
-        renderExpenseList();
-
+        if (data.error) { if (!cached) { listDiv.innerHTML = `<p style="color: var(--warn-text);">エラー: ${data.error}</p>`; settleDiv.innerHTML = '-'; } return; }
+        expenseData = data; localStorage.setItem('cache_expense', JSON.stringify(data)); renderExpenseList();
     } catch (error) {
-        if (!cached) {
-            listDiv.innerHTML = `<p style="color: red;">通信エラーが発生しました．</p>`;
-            settleDiv.innerHTML = `<p style="color: red;">エラー</p>`;
-        }
+        if (!cached) { listDiv.innerHTML = `<p style="color: var(--warn-text);">通信エラーが発生しました．</p>`; settleDiv.innerHTML = `<p style="color: var(--warn-text);">エラー</p>`; }
     }
 }
 
 function renderExpenseList() {
-    const listDiv = document.getElementById('expense-list');
-    const settleDiv = document.getElementById('settlement-result');
+    const listDiv = document.getElementById('expense-list'); const settleDiv = document.getElementById('settlement-result');
     const filterPayer = document.getElementById('expense-filter') ? document.getElementById('expense-filter').value : 'all';
 
     if (expenseData.length === 0) {
-        listDiv.innerHTML = '<p style="text-align: center; color: #666;">支出はまだ記録されていません．</p>';
-        settleDiv.innerHTML = '<p style="text-align: center; color: #666;">精算データはありません．</p>';
-        return;
+        listDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted);">支出はまだ記録されていません．</p>';
+        settleDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted);">精算データはありません．</p>'; return;
     }
 
     expenseData.sort((a, b) => {
-        const timeA = new Date(a['日付'] || '1970-01-01').getTime();
-        const timeB = new Date(b['日付'] || '1970-01-01').getTime();
+        const timeA = new Date(a['日付'] || '1970-01-01').getTime(); const timeB = new Date(b['日付'] || '1970-01-01').getTime();
         return timeB - timeA;
     });
 
-    let html = '';
-    let totalAmount = 0;
-    
-    const balances = {};
-    APP_CONFIG.travelers.forEach(person => balances[person] = 0);
-
-    const curr1Name = APP_CONFIG.curr1Name;
-    const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
-    const curr2Name = APP_CONFIG.curr2Name;
-    const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
-
+    let html = ''; let totalAmount = 0;
+    const balances = {}; APP_CONFIG.travelers.forEach(person => balances[person] = 0);
+    const curr1Name = APP_CONFIG.curr1Name; const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
+    const curr2Name = APP_CONFIG.curr2Name; const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
     let displayCount = 0;
 
     expenseData.forEach(row => {
         let dateStr = '';
         if (row['日付']) {
             const d = new Date(row['日付']);
-            if (!isNaN(d.getTime())) {
-                dateStr = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
-            } else {
-                dateStr = row['日付'];
-            }
+            if (!isNaN(d.getTime())) dateStr = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+            else dateStr = row['日付'];
         }
         
-        let itemJPY = parseFloat(row['金額']) || 0;
-        const currency = row['通貨'] || '円';
+        let itemJPY = parseFloat(row['金額']) || 0; const currency = row['通貨'] || '円';
         const originalAmount = row['外貨金額'] !== undefined && row['外貨金額'] !== '' ? parseFloat(row['外貨金額']) : itemJPY;
         
-        if (currency !== '円' && currency === curr1Name && curr1Name) {
-            itemJPY = Math.round(originalAmount * rateCurr1);
-        } else if (currency !== '円' && currency === curr2Name && curr2Name) {
-            itemJPY = Math.round(originalAmount * rateCurr2);
-        } else {
-            itemJPY = Math.round(itemJPY);
-        }
+        if (currency !== '円' && currency === curr1Name && curr1Name) itemJPY = Math.round(originalAmount * rateCurr1);
+        else if (currency !== '円' && currency === curr2Name && curr2Name) itemJPY = Math.round(originalAmount * rateCurr2);
+        else itemJPY = Math.round(itemJPY);
         
-        const payer = row['支払者'] || '';
-        const targetStr = row['対象者'] || row['誰の分？'] || '全員';
-        const contentStr = row['支払い内容'] || row['支払内容'] || '';
-        const id = row['ID'] || '';
+        const payer = row['支払者'] || ''; const targetStr = row['対象者'] || row['誰の分？'] || '全員'; const contentStr = row['支払い内容'] || row['支払内容'] || ''; const id = row['ID'] || '';
         
-        totalAmount += itemJPY;
+        let targets = []; if (targetStr === '全員') targets = APP_CONFIG.travelers; else targets = targetStr.split(',').map(s => s.trim()).filter(s => s);
         
-        let targets = [];
-        if (targetStr === '全員') {
-            targets = APP_CONFIG.travelers;
-        } else {
-            targets = targetStr.split(',').map(s => s.trim()).filter(s => s);
-        }
-        
+        const isSettlement = contentStr.startsWith('[精算]');
+        if (!isSettlement) { totalAmount += itemJPY; }
+
         if (targets.length > 0) {
             const splitAmount = itemJPY / targets.length;
             balances[payer] = (balances[payer] || 0) + itemJPY;
-            targets.forEach(t => {
-                balances[t] = (balances[t] || 0) - splitAmount;
-            });
+            targets.forEach(t => { balances[t] = (balances[t] || 0) - splitAmount; });
         }
 
-        if (filterPayer !== 'all' && payer !== filterPayer) {
-            return;
-        }
-
+        if (filterPayer !== 'all' && payer !== filterPayer) return;
         displayCount++;
         
-        let icon = "💴";
-        let displayContent = contentStr;
-        
+        let icon = "💴"; let displayContent = contentStr;
         const match = contentStr.match(/^\[(.*?)\]\s*(.*)$/);
         if (match) {
-            const cat = match[1];
-            const det = match[2];
-            if (cat === '食費') icon = "🍔";
-            else if (cat === '交通費') icon = "🚃";
-            else if (cat === '宿泊費') icon = "🏨";
-            else if (cat === '観光費') icon = "🎟️";
-            else if (cat === 'その他') icon = "📦";
+            const cat = match[1]; const det = match[2];
+            if (cat === '食費') icon = "🍔"; else if (cat === '交通費') icon = "🚃"; else if (cat === '宿泊費') icon = "🏨";
+            else if (cat === '観光費') icon = "🎟️"; else if (cat === '精算') icon = "🤝"; else if (cat === 'その他') icon = "📦";
             
-            displayContent = `<span style="font-size: 0.8em; background-color: #e6f7ff; color: #0056b3; border: 1px solid #99c2ff; border-radius: 4px; padding: 2px 6px; margin-right: 6px;">${cat}</span>${det}`;
+            displayContent = `<span style="font-size: 0.8em; background-color: var(--highlight-bg); color: var(--primary-color); border: 1px solid var(--highlight-border); border-radius: 4px; padding: 2px 6px; margin-right: 6px;">${cat}</span>${det}`;
         }
         
         let targetDisplay = targetStr === '全員' ? '全員' : targetStr;
-        
-        let currencyDisplay = '';
-        if (currency !== '円') {
-            currencyDisplay = `<div style="font-size: 0.8em; color: #666; margin-bottom: 2px;">(${currency} ${originalAmount.toLocaleString()})</div>`;
-        }
+        let currencyDisplay = ''; if (currency !== '円') currencyDisplay = `<div style="font-size: 0.8em; color: var(--text-muted); margin-bottom: 2px;">(${currency} ${originalAmount.toLocaleString()})</div>`;
 
         html += `
-            <div class="swipe-container" style="border-bottom: 1px solid #eee;">
-                <div class="swipe-content" style="background: #fff; padding: 10px 0; display: flex; align-items: center; position: relative; z-index: 2;">
+            <div class="swipe-container" style="border-bottom: 1px solid var(--expense-item-border);">
+                <div class="swipe-content" style="background: var(--card-bg); padding: 10px 0; display: flex; align-items: center; position: relative; z-index: 2;">
                     <div style="font-size: 1.5em; line-height: 1.2; padding-right: 10px; padding-left: 5px;">${icon}</div>
                     <div style="flex: 1; padding-right: 10px;">
-                        <div style="font-size: 0.85em; color: #666; margin-bottom: 3px;">${dateStr}</div>
-                        <div style="font-weight: bold; margin: 4px 0;">${displayContent}</div>
-                        <div style="font-size: 0.85em; color: #555; background-color: #f8f9fa; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 3px;">
+                        <div style="font-size: 0.85em; color: var(--text-muted); margin-bottom: 3px;">${dateStr}</div>
+                        <div style="font-weight: bold; margin: 4px 0; color: var(--text-main);">${displayContent}</div>
+                        <div style="font-size: 0.85em; color: var(--text-muted); background-color: var(--input-bg); display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 3px;">
                             支払: ${payer} ➔ 対象: ${targetDisplay}
                         </div>
                     </div>
                     <div style="text-align: right; margin-right: 10px;">
                         ${currencyDisplay}
-                        <div style="font-weight: bold; color: #d63384; font-size: 1.1em;">
-                            ¥${itemJPY.toLocaleString()}
-                        </div>
+                        <div style="font-weight: bold; color: var(--accent-color); font-size: 1.1em;">¥${itemJPY.toLocaleString()}</div>
                     </div>
                 </div>
                 <div class="swipe-actions">
@@ -279,184 +172,114 @@ function renderExpenseList() {
         `;
     });
 
-    if (displayCount === 0) {
-        listDiv.innerHTML = '<p style="text-align: center; color: #666;">該当する支出履歴はありません．</p>';
-    } else {
-        listDiv.innerHTML = html;
-    }
+    if (displayCount === 0) listDiv.innerHTML = '<p style="text-align: center; color: var(--text-muted);">該当する支出履歴はありません．</p>';
+    else listDiv.innerHTML = html;
 
-    let creditors = [];
-    let debtors = [];
-
+    let creditors = []; let debtors = [];
     for (const [person, amount] of Object.entries(balances)) {
         if (amount > 0.5) creditors.push({ person, amount: amount });
         if (amount < -0.5) debtors.push({ person, amount: -amount });
     }
 
-    creditors.sort((a, b) => b.amount - a.amount);
-    debtors.sort((a, b) => b.amount - a.amount);
-
-    let settlements = [];
-    let i = 0, j = 0;
+    creditors.sort((a, b) => b.amount - a.amount); debtors.sort((a, b) => b.amount - a.amount);
+    let settlements = []; let i = 0, j = 0;
     while (i < debtors.length && j < creditors.length) {
-        let debtor = debtors[i];
-        let creditor = creditors[j];
-
-        let amount = Math.min(debtor.amount, creditor.amount);
-        amount = Math.round(amount);
-
-        if (amount > 0) {
-           settlements.push({ from: debtor.person, to: creditor.person, amount: amount });
-        }
-
-        debtor.amount -= amount;
-        creditor.amount -= amount;
-
-        if (debtor.amount < 0.5) i++;
-        if (creditor.amount < 0.5) j++;
+        let debtor = debtors[i]; let creditor = creditors[j];
+        let amount = Math.min(debtor.amount, creditor.amount); amount = Math.round(amount);
+        if (amount > 0) settlements.push({ from: debtor.person, to: creditor.person, amount: amount });
+        debtor.amount -= amount; creditor.amount -= amount;
+        if (debtor.amount < 0.5) i++; if (creditor.amount < 0.5) j++;
     }
 
-    let settleHtml = `<div style="margin-bottom: 15px; font-size: 0.95em; color: #666;">これまでの総支出: ¥${totalAmount.toLocaleString()}</div>`;
+    let settleHtml = `<div style="margin-bottom: 15px; font-size: 0.95em; color: var(--text-muted);">これまでの総支出: ¥${totalAmount.toLocaleString()}</div>`;
     
     if (settlements.length === 0) {
-        settleHtml += `<div style="text-align: center; color: #28a745; font-weight: bold; padding: 15px; background: #e8f5e9; border-radius: 8px;">貸し借りはありません🎉</div>`;
+        settleHtml += `<div style="text-align: center; color: var(--success-text); font-weight: bold; padding: 15px; background: var(--success-bg); border-radius: 8px;">貸し借りはありません🎉</div>`;
     } else {
         settlements.forEach(s => {
             settleHtml += `
-                <div style="display: flex; align-items: center; justify-content: space-between; background-color: #fff9e6; border: 1px solid #ffd54f; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px;">
-                    <div style="font-weight: bold; color: #333;">${s.from}</div>
-                    <div style="color: #666; font-size: 0.9em; display: flex; align-items: center; gap: 5px;">
-                        <span>支払い ➔</span>
-                    </div>
-                    <div style="font-weight: bold; color: #0056b3;">${s.to}</div>
-                    <div style="font-weight: bold; color: #d63384; font-size: 1.1em; margin-left: auto;">¥${s.amount.toLocaleString()}</div>
+                <div style="display: flex; align-items: center; justify-content: space-between; background-color: var(--warn-bg); border: 1px solid var(--warn-border); padding: 10px 15px; border-radius: 8px; margin-bottom: 8px;">
+                    <div style="font-weight: bold; color: var(--text-main);">${s.from}</div>
+                    <div style="color: var(--text-muted); font-size: 0.9em; display: flex; align-items: center; gap: 5px;"><span>支払い ➔</span></div>
+                    <div style="font-weight: bold; color: var(--primary-color);">${s.to}</div>
+                    <div style="font-weight: bold; color: var(--accent-color); font-size: 1.1em; margin-left: auto; margin-right: 10px;">¥${s.amount.toLocaleString()}</div>
+                    <button onclick="settleDebt('${s.from}', '${s.to}', ${s.amount})" style="background-color: var(--success-text); color: white; border: none; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 0.85em;">精算済</button>
                 </div>
             `;
         });
     }
-    
     settleDiv.innerHTML = settleHtml;
 }
 
-window.deleteExpense = function(id) {
-    if (!confirm('この支出記録を削除してもよろしいですか？')) return;
-    
-    expenseData = expenseData.filter(item => item['ID'] !== id);
+window.settleDebt = function(from, to, amount) {
+    if (!confirm(`${from}さんから${to}さんへの ¥${amount.toLocaleString()} の精算を完了として記録しますか？\n(支出リストに「精算」として自動追加されます)`)) return;
+
+    const inputDate = new Date().toISOString().split('T')[0];
+    const newId = 'exp_' + new Date().getTime();
+    const fullContent = `[精算] ${from}から${to}への返金`;
+
+    const newItem = {
+        'ID': newId, '日付': inputDate, '支払い内容': fullContent, 
+        '金額': amount, '支払者': to, '対象者': from, '通貨': '円', '外貨金額': amount
+    };
+
+    expenseData.push(newItem);
     localStorage.setItem('cache_expense', JSON.stringify(expenseData));
     renderExpenseList();
 
-    window.safeFetch({
-        sheet: '支出',
-        action: 'delete',
-        id: id
-    });
+    const rowData = [newId, inputDate, fullContent, amount, to, from, '円', amount];
+    window.safeFetch({ sheet: '支出', action: 'insert', data: rowData });
+};
+
+window.deleteExpense = function(id) {
+    if (!confirm('この記録を削除してもよろしいですか？')) return;
+    expenseData = expenseData.filter(item => item['ID'] !== id);
+    localStorage.setItem('cache_expense', JSON.stringify(expenseData));
+    renderExpenseList(); window.safeFetch({ sheet: '支出', action: 'delete', id: id });
 }
 
 const eForm = document.getElementById('expense-form');
 if (eForm) {
     eForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        if (!APP_CONFIG.gasUrl) {
-            alert("設定タブからURLを登録してください．");
-            return;
-        }
-
+        if (!APP_CONFIG.gasUrl) { alert("設定タブからURLを登録してください．"); return; }
         const checkboxes = document.querySelectorAll('.target-member:checked');
-        if (checkboxes.length === 0) {
-            alert("「対象者」を少なくとも1人選択してください．");
-            return;
-        }
+        if (checkboxes.length === 0) { alert("「対象者」を少なくとも1人選択してください．"); return; }
 
-        const btn = document.getElementById('btn-submit-exp');
-        btn.disabled = true;
+        const btn = document.getElementById('btn-submit-exp'); btn.disabled = true;
+        const inputDate = document.getElementById('exp-date').value; localStorage.setItem('lastExpDate', inputDate);
 
-        const inputDate = document.getElementById('exp-date').value;
-        localStorage.setItem('lastExpDate', inputDate);
-
-        const category = document.getElementById('exp-category').value;
-        const detail = document.getElementById('exp-detail').value.trim();
+        const category = document.getElementById('exp-category').value; const detail = document.getElementById('exp-detail').value.trim();
         const fullContent = `[${category}] ${detail}`;
-        
-        const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
-        const currency = document.getElementById('exp-currency').value;
+        const amount = parseFloat(document.getElementById('exp-amount').value) || 0; const currency = document.getElementById('exp-currency').value;
         
         let itemJPY = amount;
-        const curr1Name = APP_CONFIG.curr1Name;
-        const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
-        const curr2Name = APP_CONFIG.curr2Name;
-        const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
-        
-        if (currency !== '円' && currency === curr1Name && curr1Name) {
-            itemJPY = amount * rateCurr1;
-        } else if (currency !== '円' && currency === curr2Name && curr2Name) {
-            itemJPY = amount * rateCurr2;
-        }
+        const curr1Name = APP_CONFIG.curr1Name; const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
+        const curr2Name = APP_CONFIG.curr2Name; const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
+        if (currency !== '円' && currency === curr1Name && curr1Name) itemJPY = amount * rateCurr1;
+        else if (currency !== '円' && currency === curr2Name && curr2Name) itemJPY = amount * rateCurr2;
         itemJPY = Math.round(itemJPY);
         
         const payer = document.getElementById('exp-payer').value;
-
         let targetStr = '';
-        if (checkboxes.length === APP_CONFIG.travelers.length) {
-            targetStr = '全員';
-        } else {
-            const selectedNames = Array.from(checkboxes).map(cb => cb.value);
-            targetStr = selectedNames.join(',');
-        }
+        if (checkboxes.length === APP_CONFIG.travelers.length) targetStr = '全員';
+        else targetStr = Array.from(checkboxes).map(cb => cb.value).join(',');
 
         const newId = 'exp_' + new Date().getTime();
+        const newItem = { 'ID': newId, '日付': inputDate, '支払い内容': fullContent, '金額': itemJPY, '支払者': payer, '対象者': targetStr, '通貨': currency, '外貨金額': amount };
         
-        const newItem = {
-            'ID': newId,
-            '日付': inputDate,
-            '支払い内容': fullContent, 
-            '金額': itemJPY,
-            '支払者': payer,
-            '対象者': targetStr, 
-            '通貨': currency,
-            '外貨金額': amount
-        };
-        
-        expenseData.push(newItem);
-        localStorage.setItem('cache_expense', JSON.stringify(expenseData));
-        renderExpenseList();
+        expenseData.push(newItem); localStorage.setItem('cache_expense', JSON.stringify(expenseData)); renderExpenseList();
 
-        document.getElementById('expense-form').reset();
-        document.getElementById('exp-date').value = localStorage.getItem('lastExpDate');
-        
-        const payerSelect = document.getElementById('exp-payer');
-        if (payerSelect && APP_CONFIG.mySelf) {
-            payerSelect.value = APP_CONFIG.mySelf;
-        }
-        
-        const allCb = document.querySelector('input[value="全員"]');
-        if (allCb) {
-            allCb.checked = false;
-            allCb.dispatchEvent(new Event('change'));
-        }
-        
+        document.getElementById('expense-form').reset(); document.getElementById('exp-date').value = localStorage.getItem('lastExpDate');
+        const payerSelect = document.getElementById('exp-payer'); if (payerSelect && APP_CONFIG.mySelf) payerSelect.value = APP_CONFIG.mySelf;
+        const allCb = document.querySelector('input[value="全員"]'); if (allCb) { allCb.checked = false; allCb.dispatchEvent(new Event('change')); }
         if (window.innerWidth <= 767) {
             document.getElementById('exp-form-wrapper').style.display = 'none';
-            const tBtn = document.getElementById('toggle-exp-form');
-            if (tBtn) tBtn.innerText = '＋ 支出を追加';
+            const tBtn = document.getElementById('toggle-exp-form'); if (tBtn) tBtn.innerText = '＋ 支出を追加';
         }
         btn.disabled = false;
 
-        const rowData = [
-            newId,
-            inputDate,
-            fullContent,
-            itemJPY,
-            payer,
-            targetStr,
-            currency,
-            amount
-        ];
-
-        window.safeFetch({
-            sheet: '支出',
-            action: 'insert',
-            data: rowData
-        });
+        const rowData = [newId, inputDate, fullContent, itemJPY, payer, targetStr, currency, amount];
+        window.safeFetch({ sheet: '支出', action: 'insert', data: rowData });
     });
 }
