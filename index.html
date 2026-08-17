@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>旅行管理アプリ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header id="app-header">旅程</header>
+
+    <!-- 旅程画面 -->
+    <div id="tab-schedule" class="content-area active">
+        <div class="two-column-layout">
+            <div class="form-column">
+                <button id="toggle-sched-form" class="toggle-form-btn">＋ 新しい予定を追加</button>
+                
+                <div id="sched-form-wrapper" class="collapsible-form">
+                    <div class="card">
+                        <h2>新しい予定を追加</h2>
+                        <form id="schedule-form">
+                            <!-- 編集時にIDを保持するための隠しフィールド -->
+                            <input type="hidden" id="edit-schedule-id" value="">
+                            
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">日付</label>
+                                <div style="display: flex; gap: 5px; align-items: center;">
+                                    <button type="button" id="btn-prev-day" style="padding: 8px 15px; background-color: #e2e6ea; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold;">◀</button>
+                                    <input type="date" id="sched-date" required style="flex: 1; padding: 8px; box-sizing: border-box; background-color: #f8f9fa;">
+                                    <button type="button" id="btn-next-day" style="padding: 8px 15px; background-color: #e2e6ea; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold;">▶</button>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">カテゴリ</label>
+                                <select id="sched-category" style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #f8f9fa; font-weight: bold;">
+                                    <option value="観光">観光・その他</option>
+                                    <option value="交通">移動・交通</option>
+                                    <option value="宿泊">宿泊</option>
+                                </select>
+                            </div>
+
+                            <div id="sched-dynamic-area" style="padding: 10px; background-color: #f8f9fa; border-radius: 5px; margin-bottom: 10px; border: 1px solid #e9ecef;">
+                                <!-- schedule.js で入力欄が自動生成されます -->
+                            </div>
+
+                            <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+                                <div style="flex: 2;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">参考URL</label>
+                                    <input type="url" id="sched-url" placeholder="https://..." style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">URL名 (任意)</label>
+                                    <input type="text" id="sched-url-name" placeholder="例：公式" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">メモ</label>
+                                <input type="text" id="sched-memo" placeholder="備考があれば" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                            </div>
+                            <button type="submit" id="btn-submit-sched" style="width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">予定を追加</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-column">
+                <div class="card">
+                    <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                        旅程一覧
+                        <button onclick="loadSchedule()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">更新</button>
+                    </h2>
+                    <div id="schedule-list">
+                        <p style="text-align: center; color: #666;">設定からURLを登録してください</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 予算画面 -->
+    <div id="tab-budget" class="content-area">
+        <div class="two-column-layout">
+            <div class="form-column">
+                <button id="toggle-budget-form" class="toggle-form-btn">＋ 予算項目を追加</button>
+                
+                <div id="budget-form-wrapper" class="collapsible-form">
+                    <div class="card">
+                        <h2>予算項目を追加</h2>
+                        <form id="budget-form">
+                            <input type="hidden" id="edit-budget-id" value="">
+                            
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">カテゴリ</label>
+                                <select id="bg-category" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                    <option value="交通費">交通費</option>
+                                    <option value="宿泊費">宿泊費</option>
+                                    <option value="観光費">観光費</option>
+                                    <option value="食費">食費</option>
+                                    <option value="その他">その他</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <label id="bg-detail-label" style="display: block; font-size: 0.9em; margin-bottom: 3px;">用途・詳細 (必須)</label>
+                                <input type="text" id="bg-detail" required placeholder="例：航空券，マドリード観光など" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                            </div>
+                            <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">計算方法</label>
+                                    <select id="bg-type" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                        <option value="固定費">固定額 (1回きり)</option>
+                                        <option value="日額">1日あたり (×日数)</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">通貨</label>
+                                    <select id="bg-currency" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                        <option value="円">日本円 (¥)</option>
+                                        <option value="EUR">ユーロ (€)</option>
+                                        <option value="MAD">ディルハム (MAD)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- 日数調整エリア -->
+                            <div id="bg-days-area" style="display: none; margin-bottom: 10px; background-color: #e6f7ff; padding: 10px; border-radius: 5px; border: 1px dashed #0056b3;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px; color: #0056b3; font-weight: bold;">掛ける日数</label>
+                                <div style="display: flex; gap: 5px; align-items: center;">
+                                    <button type="button" id="btn-minus-bg-day" style="padding: 8px 15px; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold;">－</button>
+                                    <input type="number" id="bg-target-days" step="any" style="flex: 1; padding: 8px; box-sizing: border-box; text-align: center;">
+                                    <button type="button" id="btn-plus-bg-day" style="padding: 8px 15px; background-color: #fff; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-weight: bold;">＋</button>
+                                </div>
+                                <div style="font-size: 0.8em; color: #666; margin-top: 5px;">※デフォルトは設定タブの基準日数が入ります</div>
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">金額</label>
+                                <input type="number" id="bg-amount" step="any" required placeholder="例：140000" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                            </div>
+                            
+                            <button type="submit" id="btn-submit-bg" style="width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">予算を追加</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-column">
+                <div class="card" style="background-color: #fff9e6; border: 2px solid #ffd54f; text-align: center; margin-bottom: 15px;">
+                    <h2 style="margin-top: 0; color: #333; font-size: 1.2em;">総予算見積もり</h2>
+                    <div id="budget-total" style="font-size: 2.2em; font-weight: bold; color: #d32f2f;">¥ 0</div>
+                </div>
+
+                <div class="card">
+                    <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                        内訳リスト
+                        <button onclick="loadBudget()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">更新</button>
+                    </h2>
+                    <div id="budget-list">
+                        <p style="text-align: center; color: #666;">データを読み込んでいます...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 支出・割り勘画面 -->
+    <div id="tab-expense" class="content-area">
+        <div class="two-column-layout">
+            <div class="form-column">
+                <button id="toggle-exp-form" class="toggle-form-btn">＋ 支出を追加</button>
+                
+                <div id="exp-form-wrapper" class="collapsible-form">
+                    <div class="card">
+                        <h2>支出を追加</h2>
+                        <form id="expense-form">
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">日付</label>
+                                <input type="date" id="exp-date" required style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #f8f9fa;">
+                            </div>
+                            
+                            <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">カテゴリ</label>
+                                    <select id="exp-category" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                        <option value="食費">🍔 食費</option>
+                                        <option value="交通費">🚃 交通費</option>
+                                        <option value="宿泊費">🏨 宿泊費</option>
+                                        <option value="観光費">🎟️ 観光費</option>
+                                        <option value="その他">📦 その他</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">詳細</label>
+                                    <input type="text" id="exp-detail" required placeholder="例：ランチ" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                </div>
+                            </div>
+
+                            <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">金額</label>
+                                    <input type="number" id="exp-amount" step="any" required placeholder="例：3000" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">通貨</label>
+                                    <select id="exp-currency" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                        <option value="円">日本円 (¥)</option>
+                                        <option value="EUR">ユーロ (€)</option>
+                                        <option value="MAD">ディルハム (MAD)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">支払った人</label>
+                                <select id="exp-payer" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 5px;">誰の分？（複数選択可）</label>
+                                <div id="exp-target-container" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <!-- expense.js でチェックボックスが自動生成されます -->
+                                </div>
+                            </div>
+                            <button type="submit" id="btn-submit-exp" style="width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">支出を記録</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>割り勘の結果 (清算)</h2>
+                    <div id="settlement-result">
+                        <p style="text-align: center; color: #666;">データがありません</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-column">
+                <div class="card">
+                    <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                        支出履歴
+                        <button onclick="loadExpenses()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">更新</button>
+                    </h2>
+                    <div id="expense-list">
+                        <p style="text-align: center; color: #666;">設定からURLを登録してください</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 設定画面 -->
+    <div id="tab-settings" class="content-area">
+        <div class="card">
+            <h2>アプリ設定</h2>
+            <p style="font-size: 0.9em; color: #666;">旅行ごとにこの設定を変更すれば，同じアプリをずっと使い回せます．</p>
+            <form id="settings-form">
+                <div style="margin-bottom: 10px;">
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">GAS ウェブアプリURL</label>
+                    <input type="url" id="set-url" required placeholder="https://script.google.com/..." style="width: 100%; padding: 8px; box-sizing: border-box;">
+                </div>
+                
+                <div style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;">
+                    <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #0056b3;">予算・支出の基本設定</label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                        <div style="flex: 1; min-width: 45%;">
+                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">ユーロ/円 (EUR)</label>
+                            <input type="number" id="set-rate-eur" step="any" required placeholder="例: 165" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                        </div>
+                        <div style="flex: 1; min-width: 45%;">
+                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">MAD/円 (MAD)</label>
+                            <input type="number" id="set-rate-mad" step="any" required placeholder="例: 15" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">旅行日数 (基準となる日数)</label>
+                        <input type="number" id="set-days" step="any" required placeholder="例: 15" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">基本の年</label>
+                        <select id="set-year" required style="width: 100%; padding: 8px; box-sizing: border-box;"></select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">月 (1つ目)</label>
+                        <select id="set-month1" required style="width: 100%; padding: 8px; box-sizing: border-box;"></select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">月 (任意)</label>
+                        <select id="set-month2" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                            <option value="">なし</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">旅行メンバー</label>
+                    <div id="member-inputs-container"></div>
+                    <button type="button" id="btn-add-member" style="margin-top: 5px; width: 100%; padding: 10px; background-color: #e2e6ea; color: #333; border: 1px dashed #ccc; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold;">＋ メンバーを追加</button>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">滞在都市 (宿泊・色分け用)</label>
+                    <div id="city-inputs-container"></div>
+                    <button type="button" id="btn-add-city" style="margin-top: 5px; width: 100%; padding: 10px; background-color: #e2e6ea; color: #333; border: 1px dashed #ccc; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold;">＋ 滞在都市を追加</button>
+                </div>
+
+                <button type="submit" style="width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">設定を保存して更新</button>
+            </form>
+
+            <div id="share-section" style="margin-top: 25px; padding-top: 15px; border-top: 1px dashed #ccc; display: none;">
+                <p style="font-size: 0.9em; margin-top: 0; margin-bottom: 8px;"><strong>📱 メンバーに設定を共有</strong></p>
+                <p style="font-size: 0.8em; color: #666; margin-bottom: 10px;">このボタンを押してURLをコピーし，LINE等でメンバーに送ってください．相手がURLを開くと自動で設定が完了します．</p>
+                <button type="button" id="btn-share-settings" style="width: 100%; padding: 12px; background-color: #17a2b8; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">🔗 共有用URLをコピー</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('schedule', '旅程')">📅 旅程</div>
+        <div class="nav-item" onclick="switchTab('budget', '予算')">💰 予算</div>
+        <div class="nav-item" onclick="switchTab('expense', '支出')">💴 支出</div>
+        <div class="nav-item" onclick="switchTab('settings', '設定')">⚙️ 設定</div>
+    </div>
+
+    <script src="main.js"></script>
+    <script src="schedule.js"></script>
+    <script src="budget.js"></script>
+    <script src="expense.js"></script>
+</body>
+</html>
