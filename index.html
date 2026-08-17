@@ -234,6 +234,47 @@
         </div>
     </div>
 
+    <!-- 準備(ToDo)画面 -->
+    <div id="tab-todo" class="content-area">
+        <div class="two-column-layout">
+            <div class="form-column">
+                <button id="toggle-todo-form" class="toggle-form-btn">＋ 項目を追加</button>
+                <div id="todo-form-wrapper" class="collapsible-form">
+                    <div class="card">
+                        <h2>項目を追加</h2>
+                        <form id="todo-form">
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">種類</label>
+                                <select id="todo-type" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                                    <option value="共有ToDo">👥 共有ToDo</option>
+                                    <option value="個人ToDo">👤 個人ToDo</option>
+                                    <option value="持ち物">👜 持ち物</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">内容</label>
+                                <input type="text" id="todo-content" required placeholder="例：パスポート、ホテル予約など" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                            </div>
+                            <button type="submit" id="btn-submit-todo" style="width: 100%; padding: 12px; background-color: #0056b3; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">追加</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="list-column">
+                <div class="card">
+                    <h2 style="display: flex; justify-content: space-between; align-items: center;">
+                        準備・持ち物リスト
+                        <button onclick="loadTodo(true)" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">最新を取得</button>
+                    </h2>
+                    <div id="todo-list">
+                        <p style="text-align: center; color: #666;">読み込み中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 設定画面 -->
     <div id="tab-settings" class="content-area">
         <div class="card">
@@ -303,7 +344,7 @@
                 </div>
                 
                 <div style="margin-bottom: 15px; padding: 10px; background-color: #e6f7ff; border: 1px solid #99c2ff; border-radius: 5px;">
-                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; font-weight: bold; color: #0056b3;">自分の名前 (支出の支払者の初期値)</label>
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; font-weight: bold; color: #0056b3;">自分の名前 (支出の支払者の初期値・持ち物チェック用)</label>
                     <select id="set-myself" style="width: 100%; padding: 8px; box-sizing: border-box;">
                         <option value="">未設定</option>
                     </select>
@@ -331,6 +372,7 @@
         <div class="nav-item active" onclick="switchTab('schedule', '旅程')">📅 旅程</div>
         <div class="nav-item" onclick="switchTab('budget', '予算')">💰 予算</div>
         <div class="nav-item" onclick="switchTab('expense', '支出')">💴 支出</div>
+        <div class="nav-item" onclick="switchTab('todo', '準備')">✅ 準備</div>
         <div class="nav-item" onclick="switchTab('settings', '設定')">⚙️ 設定</div>
     </div>
 
@@ -338,5 +380,6 @@
     <script src="schedule.js"></script>
     <script src="budget.js"></script>
     <script src="expense.js"></script>
+    <script src="todo.js"></script>
 </body>
 </html>

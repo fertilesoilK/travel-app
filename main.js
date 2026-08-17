@@ -239,6 +239,7 @@ if (settingsForm) {
         localStorage.removeItem('cache_schedule');
         localStorage.removeItem('cache_budget');
         localStorage.removeItem('cache_expense');
+        localStorage.removeItem('cache_todo'); // 新規追加
         
         alert('設定を保存しました！画面を更新します．');
         location.reload();
@@ -378,6 +379,7 @@ window.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('cache_schedule');
         localStorage.removeItem('cache_budget');
         localStorage.removeItem('cache_expense');
+        localStorage.removeItem('cache_todo'); // 新規追加
         
         window.history.replaceState(null, '', window.location.pathname);
         alert('共有された設定を読み込みました！');
@@ -470,6 +472,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (typeof loadSchedule === 'function') loadSchedule();
         if (typeof loadBudget === 'function') loadBudget();
         if (typeof loadExpenses === 'function') loadExpenses();
+        if (typeof loadTodo === 'function') loadTodo(true); // 新規追加
         
         const headerTitle = APP_CONFIG.tripTitle ? APP_CONFIG.tripTitle + ' - 旅程' : '旅程';
         document.getElementById('app-header').innerText = headerTitle;
