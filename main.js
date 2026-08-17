@@ -239,7 +239,7 @@ if (settingsForm) {
         localStorage.removeItem('cache_schedule');
         localStorage.removeItem('cache_budget');
         localStorage.removeItem('cache_expense');
-        localStorage.removeItem('cache_todo'); // 新規追加
+        localStorage.removeItem('cache_todo');
         
         alert('設定を保存しました！画面を更新します．');
         location.reload();
@@ -379,7 +379,7 @@ window.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem('cache_schedule');
         localStorage.removeItem('cache_budget');
         localStorage.removeItem('cache_expense');
-        localStorage.removeItem('cache_todo'); // 新規追加
+        localStorage.removeItem('cache_todo');
         
         window.history.replaceState(null, '', window.location.pathname);
         alert('共有された設定を読み込みました！');
@@ -472,7 +472,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (typeof loadSchedule === 'function') loadSchedule();
         if (typeof loadBudget === 'function') loadBudget();
         if (typeof loadExpenses === 'function') loadExpenses();
-        if (typeof loadTodo === 'function') loadTodo(true); // 新規追加
+        if (typeof loadTodo === 'function') loadTodo(true);
         
         const headerTitle = APP_CONFIG.tripTitle ? APP_CONFIG.tripTitle + ' - 旅程' : '旅程';
         document.getElementById('app-header').innerText = headerTitle;
@@ -484,4 +484,82 @@ window.addEventListener('DOMContentLoaded', () => {
     if (navigator.onLine) {
         setTimeout(window.processSyncQueue, 1500);
     }
+});
+
+// --- スワイプ操作の実装 ---
+const swipeStyle = document.createElement('style');
+swipeStyle.innerHTML = `
+    .swipe-container { position: relative; overflow: hidden; width: 100%; touch-action: pan-y; }
+    .swipe-content { position: relative; z-index: 2; transition: transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1); }
+    .swipe-actions { position: absolute; top: 0; right: 0; height: 100%; display: flex; z-index: 1; }
+`;
+document.head.appendChild(swipeStyle);
+
+let swipeStartX = 0;
+let swipeStartY = 0;
+let swipedElement = null;
+
+document.addEventListener('touchstart', e => {
+    const el = e.target.closest('.swipe-content');
+    
+    if (swipedElement && swipedElement !== el) {
+        swipedElement.style.transform = 'translateX(0px)';
+        swipedElement = null;
+    }
+    
+    if (!el) return;
+    swipeStartX = e.touches[0].clientX;
+    swipeStartY = e.touches[0].clientY;
+    el.style.transition = 'none'; 
+}, {passive: true});
+
+document.addEventListener('touchmove', e => {
+    const el = e.target.closest('.swipe-content');
+    if (!el || swipeStartX === 0) return;
+    
+    const diffX = e.touches[0].clientX - swipeStartX;
+    const diffY = e.touches[0].clientY - swipeStartY;
+
+    if (Math.abs(diffY) > Math.abs(diffX)) return;
+    
+    const actions = el.nextElementSibling;
+    const actionsWidth = actions ? actions.offsetWidth : 80;
+
+    if (diffX < 0) {
+        const moveX = Math.max(diffX, -actionsWidth);
+        el.style.transform = `translateX(${moveX}px)`;
+    } else if (diffX > 0 && swipedElement === el) {
+        const moveX = Math.min(diffX - actionsWidth, 0);
+        el.style.transform = `translateX(${moveX}px)`;
+    }
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+    const el = e.target.closest('.swipe-content');
+    if (!el || swipeStartX === 0) return;
+    
+    el.style.transition = 'transform 0.3s cubic-bezier(0.1, 0.7, 0.1, 1)';
+    
+    const diffX = e.changedTouches[0].clientX - swipeStartX;
+    const diffY = e.changedTouches[0].clientY - swipeStartY;
+    
+    if (Math.abs(diffX) > Math.abs(diffY)) {
+        const actions = el.nextElementSibling;
+        const actionsWidth = actions ? actions.offsetWidth : 80;
+
+        if (diffX < -30 || (diffX < 0 && swipedElement === el)) { 
+            el.style.transform = `translateX(-${actionsWidth}px)`;
+            swipedElement = el;
+        } else { 
+            el.style.transform = 'translateX(0px)';
+            if (swipedElement === el) swipedElement = null;
+        }
+    } else if (swipedElement === el) {
+        const actions = el.nextElementSibling;
+        const actionsWidth = actions ? actions.offsetWidth : 80;
+        el.style.transform = `translateX(-${actionsWidth}px)`;
+    } else {
+        el.style.transform = 'translateX(0px)';
+    }
+    swipeStartX = 0;
 });

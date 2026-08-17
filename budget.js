@@ -85,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadBudget(forceFetch = false) {
     if (typeof forceFetch !== 'boolean') forceFetch = false;
 
-    // 旅行開始前なら強制的に最新データを取得する処理
     if (APP_CONFIG.startDate) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -190,18 +189,22 @@ function renderBudgetList() {
             catTotal += itemJPY;
 
             catHtml += `
-                <div style="display: flex; align-items: center; border-bottom: 1px solid #eee; padding: 8px 0;">
-                    <div style="flex: 1; padding-right: 10px;">
-                        <div style="font-weight: bold; font-size: 0.95em;">${row['用途']}</div>
-                        <div style="font-size: 0.8em; color: #666;">
-                            ${isDaily ? '📅 ' + targetDays + '日分' : '📌 固定'} | ${currency !== '円' ? currency : '円'} ${amount.toLocaleString()}
-                            ${calcDetail ? '<span style="color: #999; margin-left: 5px;">' + calcDetail + '</span>' : ''}
+                <div class="swipe-container" style="border-bottom: 1px solid #eee;">
+                    <div class="swipe-content" style="background: #fff; padding: 8px 5px; display: flex; align-items: center; position: relative; z-index: 2;">
+                        <div style="flex: 1; padding-right: 10px;">
+                            <div style="font-weight: bold; font-size: 0.95em;">${row['用途']}</div>
+                            <div style="font-size: 0.8em; color: #666;">
+                                ${isDaily ? '📅 ' + targetDays + '日分' : '📌 固定'} | ${currency !== '円' ? currency : '円'} ${amount.toLocaleString()}
+                                ${calcDetail ? '<span style="color: #999; margin-left: 5px;">' + calcDetail + '</span>' : ''}
+                            </div>
+                        </div>
+                        <div style="font-weight: bold; font-size: 1.1em; margin-right: 10px; text-align: right;">
+                            ¥ ${Math.round(itemJPY).toLocaleString()}
                         </div>
                     </div>
-                    <div style="font-weight: bold; font-size: 1.1em; margin-right: 10px; text-align: right;">
-                        ¥ ${Math.round(itemJPY).toLocaleString()}
+                    <div class="swipe-actions">
+                        <button onclick="deleteBudget('${row['ID']}')" style="background-color: #dc3545; border: none; color: white; cursor: pointer; padding: 0 20px; font-size: 1.2em;">🗑️</button>
                     </div>
-                    <button onclick="deleteBudget('${row['ID']}')" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1.1em; padding: 5px; flex-shrink: 0;" title="この予算項目を削除">🗑️</button>
                 </div>
             `;
         });

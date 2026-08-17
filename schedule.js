@@ -216,7 +216,6 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadSchedule(forceFetch = false) {
     if (typeof forceFetch !== 'boolean') forceFetch = false;
     
-    // 旅行開始前なら強制的に最新データを取得する処理
     if (APP_CONFIG.startDate) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -400,7 +399,7 @@ function renderScheduleList() {
             bgColor = cityColorMap[currentBaseCity] || '#fff9e6'; 
         }
         
-        let wrapperStyle = `background-color: ${bgColor}; border: 1px solid #e0e0e0; border-radius: 6px; padding: 6px; margin: 4px 0; display: flex; gap: 6px; position: relative;`;
+        let containerStyle = `margin: 4px 0; border-radius: 6px; overflow: hidden; position: relative; border: 1px solid #e0e0e0;`;
 
         if (category === "交通") {
             const methodStr = row['移動手段'] || 'その他';
@@ -423,10 +422,10 @@ function renderScheduleList() {
 
             if (row['表示タイプ'] === 'departure_only') {
                 mainContent = `${depLoc}発 <span style="font-size: 0.8em; color: #0056b3; margin-left: 4px; font-weight: normal;">[${displayMethod}]</span>`;
-                wrapperStyle = `background-color: ${bgColor}; border: 2px solid #ccc; border-bottom: 2px dashed #ccc; border-radius: 8px 8px 0 0; padding: 6px; margin-top: 4px; display: flex; gap: 6px; position: relative;`;
+                containerStyle = `margin-top: 4px; border-radius: 8px 8px 0 0; overflow: hidden; position: relative; border: 2px solid #ccc; border-bottom: 2px dashed #ccc;`;
             } else if (row['表示タイプ'] === 'arrival_only') {
                 mainContent = `➔ ${arrLoc}着 <span style="font-size: 0.8em; color: #0056b3; margin-left: 4px; font-weight: normal;">[${displayMethod}]</span>`;
-                wrapperStyle = `background-color: ${bgColor}; border: 2px solid #ccc; border-top: none; border-radius: 0 0 8px 8px; padding: 6px; margin-bottom: 4px; display: flex; gap: 6px; position: relative;`;
+                containerStyle = `margin-bottom: 4px; border-radius: 0 0 8px 8px; overflow: hidden; position: relative; border: 2px solid #ccc; border-top: none;`;
             } else {
                 if (depLoc && arrLoc) {
                     mainContent = `${depLoc} ➔ ${arrLoc} <span style="font-size: 0.8em; color: #0056b3; margin-left: 4px; font-weight: normal;">[${displayMethod}]</span>`;
@@ -448,20 +447,21 @@ function renderScheduleList() {
         const urlName = row['URL名'] && row['URL名'].trim() !== '' ? row['URL名'] : 'リンク';
         const urlHtml = urlRaw ? `<a href="${urlRaw}" target="_blank" style="color: #0056b3; font-size: 0.75em; display: block; margin-top: 2px;">🔗 ${urlName}</a>` : '';
         
-        let editBtnHtml = `<button onclick="editSchedule('${row['ID']}')" style="position: absolute; right: 30px; top: 6px; background: none; border: none; color: #0056b3; cursor: pointer; font-size: 1.0em; padding: 2px;" title="この予定を編集">✏️</button>`;
-        let deleteBtnHtml = `<button onclick="deleteSchedule('${row['ID']}')" style="position: absolute; right: 4px; top: 6px; background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1.0em; padding: 2px;" title="この予定を削除">🗑️</button>`;
-
         currentBlock.itemsHtml += `
-            <div style="${wrapperStyle}">
-                <div style="font-size: 1.1em; line-height: 1.2; padding-top: 2px;">${icon}</div>
-                <div style="flex: 1; padding-right: 50px;">
-                    <div style="font-size: 0.7em; color: #666; font-weight: bold;">${timeDisplay}</div>
-                    <div style="font-weight: bold; font-size: 0.85em; margin: 2px 0;">${mainContent}</div>
-                    ${row['メモ'] ? `<div style="font-size: 0.75em; color: #555;">📝 ${row['メモ']}</div>` : ''}
-                    ${urlHtml}
+            <div class="swipe-container" style="${containerStyle}">
+                <div class="swipe-content" style="background-color: ${bgColor}; padding: 6px; display: flex; gap: 6px; position: relative; z-index: 2;">
+                    <div style="font-size: 1.1em; line-height: 1.2; padding-top: 2px;">${icon}</div>
+                    <div style="flex: 1; padding-right: 10px;">
+                        <div style="font-size: 0.7em; color: #666; font-weight: bold;">${timeDisplay}</div>
+                        <div style="font-weight: bold; font-size: 0.85em; margin: 2px 0;">${mainContent}</div>
+                        ${row['メモ'] ? `<div style="font-size: 0.75em; color: #555;">📝 ${row['メモ']}</div>` : ''}
+                        ${urlHtml}
+                    </div>
                 </div>
-                ${editBtnHtml}
-                ${deleteBtnHtml}
+                <div class="swipe-actions">
+                    <button onclick="editSchedule('${row['ID']}')" style="background-color: #0056b3; border: none; color: white; padding: 0 15px; font-size: 1.1em; cursor: pointer;">✏️</button>
+                    <button onclick="deleteSchedule('${row['ID']}')" style="background-color: #dc3545; border: none; color: white; padding: 0 15px; font-size: 1.1em; cursor: pointer;">🗑️</button>
+                </div>
             </div>
         `;
     });

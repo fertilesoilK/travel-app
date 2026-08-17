@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if(filterSelect) filterSelect.appendChild(option2);
         });
         
-        // 自分の名前が設定されていれば初期値としてセット
         if (payerSelect && APP_CONFIG.mySelf) {
             payerSelect.value = APP_CONFIG.mySelf;
         }
@@ -256,22 +255,26 @@ function renderExpenseList() {
         }
 
         html += `
-            <div style="border-bottom: 1px solid #eee; padding: 10px 0; display: flex; align-items: center; position: relative;">
-                <div style="font-size: 1.5em; line-height: 1.2; padding-right: 10px;">${icon}</div>
-                <div style="flex: 1; padding-right: 10px;">
-                    <div style="font-size: 0.85em; color: #666; margin-bottom: 3px;">${dateStr}</div>
-                    <div style="font-weight: bold; margin: 4px 0;">${displayContent}</div>
-                    <div style="font-size: 0.85em; color: #555; background-color: #f8f9fa; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 3px;">
-                        支払: ${payer} ➔ 対象: ${targetDisplay}
+            <div class="swipe-container" style="border-bottom: 1px solid #eee;">
+                <div class="swipe-content" style="background: #fff; padding: 10px 0; display: flex; align-items: center; position: relative; z-index: 2;">
+                    <div style="font-size: 1.5em; line-height: 1.2; padding-right: 10px; padding-left: 5px;">${icon}</div>
+                    <div style="flex: 1; padding-right: 10px;">
+                        <div style="font-size: 0.85em; color: #666; margin-bottom: 3px;">${dateStr}</div>
+                        <div style="font-weight: bold; margin: 4px 0;">${displayContent}</div>
+                        <div style="font-size: 0.85em; color: #555; background-color: #f8f9fa; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-top: 3px;">
+                            支払: ${payer} ➔ 対象: ${targetDisplay}
+                        </div>
+                    </div>
+                    <div style="text-align: right; margin-right: 10px;">
+                        ${currencyDisplay}
+                        <div style="font-weight: bold; color: #d63384; font-size: 1.1em;">
+                            ¥${itemJPY.toLocaleString()}
+                        </div>
                     </div>
                 </div>
-                <div style="text-align: right; margin-right: 10px;">
-                    ${currencyDisplay}
-                    <div style="font-weight: bold; color: #d63384; font-size: 1.1em;">
-                        ¥${itemJPY.toLocaleString()}
-                    </div>
+                <div class="swipe-actions">
+                    <button onclick="deleteExpense('${id}')" style="background-color: #dc3545; border: none; color: white; cursor: pointer; padding: 0 20px; font-size: 1.2em;">🗑️</button>
                 </div>
-                <button onclick="deleteExpense('${id}')" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1.2em; padding: 5px; flex-shrink: 0;" title="この支出を削除">🗑️</button>
             </div>
         `;
     });
@@ -371,7 +374,6 @@ if (eForm) {
         const inputDate = document.getElementById('exp-date').value;
         localStorage.setItem('lastExpDate', inputDate);
 
-        // カテゴリと詳細を組み合わせて保存するように復旧
         const category = document.getElementById('exp-category').value;
         const detail = document.getElementById('exp-detail').value.trim();
         const fullContent = `[${category}] ${detail}`;

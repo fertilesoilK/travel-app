@@ -146,13 +146,17 @@ function buildTodoRow(row, typeKey) {
     }
 
     return `
-        <div style="display: flex; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid #eee;">
-            <input type="checkbox" onchange="toggleTodo('${id}')" ${isChecked ? 'checked' : ''} style="transform: scale(1.5); margin-top: 4px; margin-right: 15px; cursor: pointer;">
-            <div style="flex: 1;">
-                <div style="${isChecked ? 'text-decoration: line-through; color: #999;' : ''}; font-size: 1.05em; font-weight: bold; cursor: pointer;" onclick="toggleTodo('${id}')">${content} ${statusText}</div>
-                ${typeKey !== '共有ToDo' ? statusText : ''}
+        <div class="swipe-container" style="border-bottom: 1px solid #eee;">
+            <div class="swipe-content" style="background: #fff; padding: 12px 5px; display: flex; align-items: flex-start; position: relative; z-index: 2;">
+                <input type="checkbox" onchange="toggleTodo('${id}')" ${isChecked ? 'checked' : ''} style="transform: scale(1.5); margin-top: 4px; margin-right: 15px; cursor: pointer;">
+                <div style="flex: 1;">
+                    <div style="${isChecked ? 'text-decoration: line-through; color: #999;' : ''}; font-size: 1.05em; font-weight: bold; cursor: pointer;" onclick="toggleTodo('${id}')">${content} ${statusText}</div>
+                    ${typeKey !== '共有ToDo' ? statusText : ''}
+                </div>
             </div>
-            <button onclick="deleteTodo('${id}')" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1.2em; padding: 5px;">🗑️</button>
+            <div class="swipe-actions">
+                <button onclick="deleteTodo('${id}')" style="background-color: #dc3545; border: none; color: white; cursor: pointer; padding: 0 20px; font-size: 1.2em;">🗑️</button>
+            </div>
         </div>
     `;
 }
