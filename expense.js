@@ -2,6 +2,7 @@ let expenseData = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     const payerSelect = document.getElementById('exp-payer');
+    const filterSelect = document.getElementById('expense-filter');
     const targetContainer = document.getElementById('exp-target-container');
     
     if (APP_CONFIG.travelers && APP_CONFIG.travelers.length > 0) {
@@ -10,6 +11,22 @@ document.addEventListener('DOMContentLoaded', () => {
             option1.value = name;
             option1.textContent = name;
             if(payerSelect) payerSelect.appendChild(option1);
+
+            const option2 = document.createElement('option');
+            option2.value = name;
+            option2.textContent = name;
+            if(filterSelect) filterSelect.appendChild(option2);
+        });
+        
+        // 自分の名前が設定されていれば初期値としてセット
+        if (payerSelect && APP_CONFIG.mySelf) {
+            payerSelect.value = APP_CONFIG.mySelf;
+        }
+    }
+
+    if (filterSelect) {
+        filterSelect.addEventListener('change', () => {
+            renderExpenseList();
         });
     }
 
@@ -80,20 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
-
-    const toggleBtn = document.getElementById('toggle-exp-form');
-    if (toggleBtn) {
-        toggleBtn.addEventListener('click', () => {
-            const wrapper = document.getElementById('exp-form-wrapper');
-            if (wrapper.style.display === 'none' || wrapper.style.display === '') {
-                wrapper.style.display = 'block';
-                toggleBtn.innerText = '－ 入力フォームを閉じる';
-            } else {
-                wrapper.style.display = 'none';
-                toggleBtn.innerText = '＋ 支出を追加';
-            }
-        });
-    }
 });
 
 async function loadExpenses() {
@@ -137,10 +140,11 @@ async function loadExpenses() {
 function renderExpenseList() {
     const listDiv = document.getElementById('expense-list');
     const settleDiv = document.getElementById('settlement-result');
+    const filterPayer = document.getElementById('expense-filter') ? document.getElementById('expense-filter').value : 'all';
 
     if (expenseData.length === 0) {
-        listDiv.innerHTML = '<p>支出はまだ記録されていません．</p>';
-        settleDiv.innerHTML = '<p>精算データはありません．</p>';
+        listDiv.innerHTML = '<p style="text-align: center; color: #666;">支出はまだ記録されていません．</p>';
+        settleDiv.innerHTML = '<p style="text-align: center; color: #666;">精算データはありません．</p>';
         return;
     }
 
@@ -160,6 +164,8 @@ function renderExpenseList() {
     const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
     const curr2Name = APP_CONFIG.curr2Name;
     const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
+
+    let displayCount = 0;
 
     expenseData.forEach(row => {
         let dateStr = '';
@@ -189,22 +195,6 @@ function renderExpenseList() {
         const contentStr = row['支払い内容'] || row['支払内容'] || '';
         const id = row['ID'] || '';
         
-        let icon = "💴";
-        let displayContent = contentStr;
-        
-        const match = contentStr.match(/^\[(.*?)\]\s*(.*)$/);
-        if (match) {
-            const cat = match[1];
-            const det = match[2];
-            if (cat === '食費') icon = "🍔";
-            else if (cat === '交通費') icon = "🚃";
-            else if (cat === '宿泊費') icon = "🏨";
-            else if (cat === '観光費') icon = "🎟️";
-            else if (cat === 'その他') icon = "📦";
-            
-            displayContent = `<span style="font-size: 0.8em; background-color: #e6f7ff; color: #0056b3; border: 1px solid #99c2ff; border-radius: 4px; padding: 2px 6px; margin-right: 6px;">${cat}</span>${det}`;
-        }
-
         totalAmount += itemJPY;
         
         let targets = [];
@@ -220,6 +210,29 @@ function renderExpenseList() {
             targets.forEach(t => {
                 balances[t] = (balances[t] || 0) - splitAmount;
             });
+        }
+
+        if (filterPayer !== 'all' && payer !== filterPayer) {
+            return;
+        }
+
+        displayCount++;
+        
+        let icon = "💴";
+        let displayContent = contentStr;
+        
+        // 過去の [カテゴリ] 詳細 フォーマットにも対応
+        const match = contentStr.match(/^\[(.*?)\]\s*(.*)$/);
+        if (match) {
+            const cat = match[1];
+            const det = match[2];
+            if (cat === '食費') icon = "🍔";
+            else if (cat === '交通費') icon = "🚃";
+            else if (cat === '宿泊費') icon = "🏨";
+            else if (cat === '観光費') icon = "🎟️";
+            else if (cat === 'その他') icon = "📦";
+            
+            displayContent = `<span style="font-size: 0.8em; background-color: #e6f7ff; color: #0056b3; border: 1px solid #99c2ff; border-radius: 4px; padding: 2px 6px; margin-right: 6px;">${cat}</span>${det}`;
         }
         
         let targetDisplay = targetStr === '全員' ? '全員' : targetStr;
@@ -249,7 +262,12 @@ function renderExpenseList() {
             </div>
         `;
     });
-    listDiv.innerHTML = html;
+
+    if (displayCount === 0) {
+        listDiv.innerHTML = '<p style="text-align: center; color: #666;">該当する支出履歴はありません．</p>';
+    } else {
+        listDiv.innerHTML = html;
+    }
 
     let creditors = [];
     let debtors = [];
@@ -340,9 +358,8 @@ if (eForm) {
         const inputDate = document.getElementById('exp-date').value;
         localStorage.setItem('lastExpDate', inputDate);
 
-        const category = document.getElementById('exp-category').value;
-        const detail = document.getElementById('exp-detail').value;
-        const fullContent = `[${category}] ${detail}`;
+        // カテゴリと詳細の代わりに、用途の入力を取得
+        const fullContent = document.getElementById('exp-purpose').value.trim();
         
         const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
         const currency = document.getElementById('exp-currency').value;
@@ -390,17 +407,18 @@ if (eForm) {
         document.getElementById('expense-form').reset();
         document.getElementById('exp-date').value = localStorage.getItem('lastExpDate');
         
+        // 自分の名前が設定されていれば初期値としてリセット時に再セット
+        const payerSelect = document.getElementById('exp-payer');
+        if (payerSelect && APP_CONFIG.mySelf) {
+            payerSelect.value = APP_CONFIG.mySelf;
+        }
+        
         const allCb = document.querySelector('input[value="全員"]');
         if (allCb) {
             allCb.checked = false;
             allCb.dispatchEvent(new Event('change'));
         }
         
-        if (window.innerWidth <= 767) {
-            document.getElementById('exp-form-wrapper').style.display = 'none';
-            const tBtn = document.getElementById('toggle-exp-form');
-            if (tBtn) tBtn.innerText = '＋ 支出を追加';
-        }
         btn.disabled = false;
 
         const rowData = [

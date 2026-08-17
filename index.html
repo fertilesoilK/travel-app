@@ -117,7 +117,6 @@
                                 <div style="flex: 1;">
                                     <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">通貨</label>
                                     <select id="bg-currency" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                                        <option value="円">日本円 (¥)</option>
                                     </select>
                                 </div>
                             </div>
@@ -166,9 +165,7 @@
     <div id="tab-expense" class="content-area">
         <div class="two-column-layout">
             <div class="form-column">
-                <button id="toggle-exp-form" class="toggle-form-btn">＋ 支出を追加</button>
-                
-                <div id="exp-form-wrapper" class="collapsible-form">
+                <div id="exp-form-wrapper" style="margin-bottom: 15px;">
                     <div class="card">
                         <h2>支出を追加</h2>
                         <form id="expense-form">
@@ -177,21 +174,9 @@
                                 <input type="date" id="exp-date" required style="width: 100%; padding: 8px; box-sizing: border-box; background-color: #f8f9fa;">
                             </div>
                             
-                            <div style="margin-bottom: 10px; display: flex; gap: 10px;">
-                                <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">カテゴリ</label>
-                                    <select id="exp-category" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                                        <option value="食費">🍔 食費</option>
-                                        <option value="交通費">🚃 交通費</option>
-                                        <option value="宿泊費">🏨 宿泊費</option>
-                                        <option value="観光費">🎟️ 観光費</option>
-                                        <option value="その他">📦 その他</option>
-                                    </select>
-                                </div>
-                                <div style="flex: 1;">
-                                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">詳細</label>
-                                    <input type="text" id="exp-detail" required placeholder="例：ランチ" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                                </div>
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">用途</label>
+                                <input type="text" id="exp-purpose" required placeholder="例：ランチ、タクシー代など" style="width: 100%; padding: 8px; box-sizing: border-box;">
                             </div>
 
                             <div style="margin-bottom: 10px; display: flex; gap: 10px;">
@@ -202,7 +187,6 @@
                                 <div style="flex: 1;">
                                     <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">通貨</label>
                                     <select id="exp-currency" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                                        <option value="円">日本円 (¥)</option>
                                     </select>
                                 </div>
                             </div>
@@ -236,6 +220,12 @@
                         支出履歴
                         <button onclick="loadExpenses()" style="font-size: 0.8em; padding: 5px 10px; cursor: pointer;">更新</button>
                     </h2>
+                    <div style="margin-bottom: 10px; display: flex; justify-content: flex-end; align-items: center; gap: 5px;">
+                        <span style="font-size: 0.85em; color: #666;">絞り込み:</span>
+                        <select id="expense-filter" style="padding: 5px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.85em;">
+                            <option value="all">すべて表示</option>
+                        </select>
+                    </div>
                     <div id="expense-list">
                         <p style="text-align: center; color: #666;">設定からURLを登録してください</p>
                     </div>
@@ -304,6 +294,15 @@
                     <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">旅行メンバー</label>
                     <div id="member-inputs-container"></div>
                     <button type="button" id="btn-add-member" style="margin-top: 5px; width: 100%; padding: 10px; background-color: #e2e6ea; color: #333; border: 1px dashed #ccc; border-radius: 5px; cursor: pointer; font-size: 0.9em; font-weight: bold;">＋ メンバーを追加</button>
+                </div>
+                
+                <!-- 新しく追加した「自分」の設定項目 -->
+                <div style="margin-bottom: 15px; padding: 10px; background-color: #e6f7ff; border: 1px solid #99c2ff; border-radius: 5px;">
+                    <label style="display: block; font-size: 0.9em; margin-bottom: 3px; font-weight: bold; color: #0056b3;">自分の名前 (支出の支払者の初期値)</label>
+                    <select id="set-myself" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                        <option value="">未設定</option>
+                    </select>
+                    <p style="font-size: 0.75em; color: #666; margin-top: 5px; margin-bottom: 0;">※この設定は端末ごとに保存されるため、共有URLには含まれません。</p>
                 </div>
 
                 <div style="margin-bottom: 15px;">

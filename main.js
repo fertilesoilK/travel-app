@@ -11,7 +11,8 @@ let APP_CONFIG = {
     curr1Rate: parsedConfig.curr1Rate !== undefined ? parsedConfig.curr1Rate : (parsedConfig.rateEur || 165),
     curr2Name: parsedConfig.curr2Name !== undefined ? parsedConfig.curr2Name : "MAD",
     curr2Rate: parsedConfig.curr2Rate !== undefined ? parsedConfig.curr2Rate : (parsedConfig.rateMad || 17.13),
-    baseDays: parsedConfig.baseDays !== undefined ? parsedConfig.baseDays : 15
+    baseDays: parsedConfig.baseDays !== undefined ? parsedConfig.baseDays : 15,
+    mySelf: parsedConfig.mySelf || ""
 };
 
 function switchTab(tabId, title) {
@@ -33,6 +34,24 @@ function switchTab(tabId, title) {
 const membersContainer = document.getElementById('member-inputs-container');
 const btnAddMember = document.getElementById('btn-add-member');
 
+function updateMySelfOptions() {
+    const mySelfSelect = document.getElementById('set-myself');
+    if (!mySelfSelect) return;
+    const currentVal = mySelfSelect.value || APP_CONFIG.mySelf;
+    mySelfSelect.innerHTML = '<option value="">未設定</option>';
+    const memberInputs = document.querySelectorAll('.member-input');
+    memberInputs.forEach(input => {
+        const val = input.value.trim();
+        if (val !== "") {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.textContent = val;
+            mySelfSelect.appendChild(opt);
+        }
+    });
+    if (currentVal) mySelfSelect.value = currentVal;
+}
+
 function createMemberInput(value = "") {
     const row = document.createElement('div');
     row.style.display = 'flex';
@@ -47,6 +66,7 @@ function createMemberInput(value = "") {
     input.style.flex = '1';
     input.style.padding = '8px';
     input.style.boxSizing = 'border-box';
+    input.addEventListener('input', updateMySelfOptions);
 
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
@@ -57,11 +77,12 @@ function createMemberInput(value = "") {
     removeBtn.style.border = 'none';
     removeBtn.style.borderRadius = '5px';
     removeBtn.style.cursor = 'pointer';
-    removeBtn.addEventListener('click', () => { row.remove(); });
+    removeBtn.addEventListener('click', () => { row.remove(); updateMySelfOptions(); });
 
     row.appendChild(input);
     row.appendChild(removeBtn);
     if (membersContainer) membersContainer.appendChild(row);
+    updateMySelfOptions();
 }
 if (btnAddMember) btnAddMember.addEventListener('click', () => { createMemberInput(); });
 
@@ -140,13 +161,19 @@ function configureDateInputs() {
 function updateCurrencyDropdowns() {
     const bgCur = document.getElementById('bg-currency');
     const expCur = document.getElementById('exp-currency');
-    let html = '<option value="円">日本円 (¥)</option>';
+    let html = '';
+    
+    // 外貨1を一番上に配置
     if (APP_CONFIG.curr1Name) {
         html += '<option value="' + APP_CONFIG.curr1Name + '">' + APP_CONFIG.curr1Name + '</option>';
     }
+    
+    html += '<option value="円">日本円 (¥)</option>';
+    
     if (APP_CONFIG.curr2Name) {
         html += '<option value="' + APP_CONFIG.curr2Name + '">' + APP_CONFIG.curr2Name + '</option>';
     }
+    
     if (bgCur) bgCur.innerHTML = html;
     if (expCur) expCur.innerHTML = html;
 }
@@ -167,6 +194,8 @@ if (settingsForm) {
         const curr2Name = document.getElementById('set-curr2-name').value.trim();
         const rateCurr2 = document.getElementById('set-rate-curr2').value;
         const baseDays = document.getElementById('set-days').value;
+        
+        const mySelf = document.getElementById('set-myself').value;
         
         const memberInputs = document.querySelectorAll('.member-input');
         const membersArray = [];
@@ -199,7 +228,8 @@ if (settingsForm) {
             curr1Rate: parseFloat(rateCurr1),
             curr2Name: curr2Name,
             curr2Rate: parseFloat(rateCurr2) || 0,
-            baseDays: parseFloat(baseDays)
+            baseDays: parseFloat(baseDays),
+            mySelf: mySelf
         };
         
         localStorage.setItem('trip_app_config', JSON.stringify(APP_CONFIG));
@@ -336,7 +366,8 @@ window.addEventListener('DOMContentLoaded', () => {
             curr1Rate: params.has('s_c1r') ? parseFloat(params.get('s_c1r')) : 165,
             curr2Name: params.has('s_c2n') ? params.get('s_c2n') : "MAD",
             curr2Rate: params.has('s_c2r') ? parseFloat(params.get('s_c2r')) : 15,
-            baseDays: params.has('s_d') ? parseFloat(params.get('s_d')) : 15
+            baseDays: params.has('s_d') ? parseFloat(params.get('s_d')) : 15,
+            mySelf: APP_CONFIG.mySelf 
         };
         localStorage.setItem('trip_app_config', JSON.stringify(APP_CONFIG));
         
@@ -410,6 +441,8 @@ window.addEventListener('DOMContentLoaded', () => {
             createMemberInput(); 
         }
     }
+    
+    updateMySelfOptions();
 
     if (citiesContainer) {
         citiesContainer.innerHTML = '';
@@ -437,7 +470,6 @@ window.addEventListener('DOMContentLoaded', () => {
         switchTab('settings', '設定');
     }
 
-    // キュー処理の初期化
     window.updateSyncBadge();
     if (navigator.onLine) {
         setTimeout(window.processSyncQueue, 1500);
