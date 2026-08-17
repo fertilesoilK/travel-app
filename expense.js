@@ -98,28 +98,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadExpenses() {
     if (!APP_CONFIG.gasUrl) return;
-
     const listDiv = document.getElementById('expense-list');
     const settleDiv = document.getElementById('settlement-result');
-    listDiv.innerHTML = '<p style="text-align: center; color: #666;">読み込み中...</p>';
-    settleDiv.innerHTML = '<p style="text-align: center; color: #666;">計算中...</p>';
+
+    const cached = localStorage.getItem('cache_expense');
+    if (cached) {
+        expenseData = JSON.parse(cached);
+        renderExpenseList();
+    } else {
+        listDiv.innerHTML = '<p style="text-align: center; color: #666;">読み込み中...</p>';
+        settleDiv.innerHTML = '<p style="text-align: center; color: #666;">計算中...</p>';
+    }
 
     try {
         const response = await fetch(APP_CONFIG.gasUrl + "?sheet=支出");
         const data = await response.json();
 
         if (data.error) {
-            listDiv.innerHTML = `<p style="color: red;">エラー: ${data.error}</p>`;
-            settleDiv.innerHTML = '-';
+            if (!cached) {
+                listDiv.innerHTML = `<p style="color: red;">エラー: ${data.error}</p>`;
+                settleDiv.innerHTML = '-';
+            }
             return;
         }
 
         expenseData = data;
+        localStorage.setItem('cache_expense', JSON.stringify(data));
         renderExpenseList();
 
     } catch (error) {
-        listDiv.innerHTML = `<p style="color: red;">通信エラーが発生しました．</p>`;
-        settleDiv.innerHTML = `<p style="color: red;">エラー</p>`;
+        if (!cached) {
+            listDiv.innerHTML = `<p style="color: red;">通信エラーが発生しました．</p>`;
+            settleDiv.innerHTML = `<p style="color: red;">エラー</p>`;
+        }
     }
 }
 
@@ -174,7 +185,6 @@ function renderExpenseList() {
         }
         
         const payer = row['支払者'] || '';
-        // 画像のヘッダー名「対象者」に対応し、旧データのために「誰の分？」もフォールバックとして残す
         const targetStr = row['対象者'] || row['誰の分？'] || '全員';
         const contentStr = row['支払内容'] || '';
         const id = row['ID'] || '';
@@ -290,6 +300,7 @@ window.deleteExpense = function(id) {
     if (!confirm('この支出記録を削除してもよろしいですか？')) return;
     
     expenseData = expenseData.filter(item => item['ID'] !== id);
+    localStorage.setItem('cache_expense', JSON.stringify(expenseData));
     renderExpenseList();
 
     if (!APP_CONFIG.gasUrl) return;
@@ -306,108 +317,112 @@ window.deleteExpense = function(id) {
     });
 }
 
-document.getElementById('expense-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    if (!APP_CONFIG.gasUrl) {
-        alert("設定タブからURLを登録してください．");
-        return;
-    }
+const eForm = document.getElementById('expense-form');
+if (eForm) {
+    eForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!APP_CONFIG.gasUrl) {
+            alert("設定タブからURLを登録してください．");
+            return;
+        }
 
-    const checkboxes = document.querySelectorAll('.target-member:checked');
-    if (checkboxes.length === 0) {
-        alert("「対象者」を少なくとも1人選択してください．");
-        return;
-    }
+        const checkboxes = document.querySelectorAll('.target-member:checked');
+        if (checkboxes.length === 0) {
+            alert("「対象者」を少なくとも1人選択してください．");
+            return;
+        }
 
-    const btn = document.getElementById('btn-submit-exp');
-    btn.disabled = true;
+        const btn = document.getElementById('btn-submit-exp');
+        btn.disabled = true;
 
-    const inputDate = document.getElementById('exp-date').value;
-    localStorage.setItem('lastExpDate', inputDate);
+        const inputDate = document.getElementById('exp-date').value;
+        localStorage.setItem('lastExpDate', inputDate);
 
-    const category = document.getElementById('exp-category').value;
-    const detail = document.getElementById('exp-detail').value;
-    const fullContent = `[${category}] ${detail}`;
-    
-    const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
-    const currency = document.getElementById('exp-currency').value;
-    
-    let itemJPY = amount;
-    const curr1Name = APP_CONFIG.curr1Name;
-    const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
-    const curr2Name = APP_CONFIG.curr2Name;
-    const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
-    
-    if (currency !== '円' && currency === curr1Name && curr1Name) {
-        itemJPY = amount * rateCurr1;
-    } else if (currency !== '円' && currency === curr2Name && curr2Name) {
-        itemJPY = amount * rateCurr2;
-    }
-    itemJPY = Math.round(itemJPY);
-    
-    const payer = document.getElementById('exp-payer').value;
+        const category = document.getElementById('exp-category').value;
+        const detail = document.getElementById('exp-detail').value;
+        const fullContent = `[${category}] ${detail}`;
+        
+        const amount = parseFloat(document.getElementById('exp-amount').value) || 0;
+        const currency = document.getElementById('exp-currency').value;
+        
+        let itemJPY = amount;
+        const curr1Name = APP_CONFIG.curr1Name;
+        const rateCurr1 = parseFloat(APP_CONFIG.curr1Rate) || 0;
+        const curr2Name = APP_CONFIG.curr2Name;
+        const rateCurr2 = parseFloat(APP_CONFIG.curr2Rate) || 0;
+        
+        if (currency !== '円' && currency === curr1Name && curr1Name) {
+            itemJPY = amount * rateCurr1;
+        } else if (currency !== '円' && currency === curr2Name && curr2Name) {
+            itemJPY = amount * rateCurr2;
+        }
+        itemJPY = Math.round(itemJPY);
+        
+        const payer = document.getElementById('exp-payer').value;
 
-    let targetStr = '';
-    if (checkboxes.length === APP_CONFIG.travelers.length) {
-        targetStr = '全員';
-    } else {
-        const selectedNames = Array.from(checkboxes).map(cb => cb.value);
-        targetStr = selectedNames.join(',');
-    }
+        let targetStr = '';
+        if (checkboxes.length === APP_CONFIG.travelers.length) {
+            targetStr = '全員';
+        } else {
+            const selectedNames = Array.from(checkboxes).map(cb => cb.value);
+            targetStr = selectedNames.join(',');
+        }
 
-    const newId = 'exp_' + new Date().getTime();
-    
-    const newItem = {
-        'ID': newId,
-        '日付': inputDate,
-        '支払内容': fullContent,
-        '金額': itemJPY,
-        '支払者': payer,
-        '対象者': targetStr, 
-        '通貨': currency,
-        '外貨金額': amount
-    };
-    
-    expenseData.push(newItem);
-    renderExpenseList();
+        const newId = 'exp_' + new Date().getTime();
+        
+        const newItem = {
+            'ID': newId,
+            '日付': inputDate,
+            '支払内容': fullContent,
+            '金額': itemJPY,
+            '支払者': payer,
+            '対象者': targetStr, 
+            '通貨': currency,
+            '外貨金額': amount
+        };
+        
+        expenseData.push(newItem);
+        localStorage.setItem('cache_expense', JSON.stringify(expenseData));
+        renderExpenseList();
 
-    document.getElementById('expense-form').reset();
-    document.getElementById('exp-date').value = localStorage.getItem('lastExpDate');
-    
-    const allCb = document.querySelector('input[value="全員"]');
-    if (allCb) {
-        allCb.checked = true;
-        allCb.dispatchEvent(new Event('change'));
-    }
-    
-    if (window.innerWidth <= 767) {
-        document.getElementById('exp-form-wrapper').style.display = 'none';
-        document.getElementById('toggle-exp-form').innerText = '＋ 支出を追加';
-    }
-    btn.disabled = false;
+        document.getElementById('expense-form').reset();
+        document.getElementById('exp-date').value = localStorage.getItem('lastExpDate');
+        
+        const allCb = document.querySelector('input[value="全員"]');
+        if (allCb) {
+            allCb.checked = true;
+            allCb.dispatchEvent(new Event('change'));
+        }
+        
+        if (window.innerWidth <= 767) {
+            document.getElementById('exp-form-wrapper').style.display = 'none';
+            const tBtn = document.getElementById('toggle-exp-form');
+            if (tBtn) tBtn.innerText = '＋ 支出を追加';
+        }
+        btn.disabled = false;
 
-    // 「対象者」として保存する
-    const rowData = [
-        newId,
-        inputDate,
-        fullContent,
-        itemJPY,
-        payer,
-        targetStr,
-        currency,
-        amount
-    ];
+        const rowData = [
+            newId,
+            inputDate,
+            fullContent,
+            itemJPY,
+            payer,
+            targetStr,
+            currency,
+            amount
+        ];
 
-    fetch(APP_CONFIG.gasUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-            sheet: '支出',
-            action: 'insert',
-            data: rowData
-        })
-    }).catch(error => {
-        alert('通信エラーが発生しました。データを再読み込みします。');
-        loadExpenses();
+        fetch(APP_CONFIG.gasUrl, {
+            method: 'POST',
+            body: JSON.stringify({
+                sheet: '支出',
+                action: 'insert',
+                data: rowData
+            })
+        }).catch(error => {
+            alert('通信エラーが発生しました。データを再読み込みします。');
+            loadExpenses();
+        });
     });
-});
+}

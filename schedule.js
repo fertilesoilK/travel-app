@@ -1,4 +1,3 @@
-// パソコン表示用のカラムレイアウトと幅調整のCSSを動的に追加
 const customStyle = document.createElement('style');
 customStyle.innerHTML = `
     .schedule-columns-container {
@@ -11,7 +10,7 @@ customStyle.innerHTML = `
         min-width: 0;
     }
     @media (min-width: 768px) {
-        body { max-width: 1600px !important; } /* 3列＋フォームが収まるよう全体幅を広げる */
+        body { max-width: 1600px !important; }
         
         .two-column-layout {
             display: flex;
@@ -19,7 +18,7 @@ customStyle.innerHTML = `
             align-items: flex-start;
         }
         .form-column {
-            flex: 0 0 320px !important; /* フォームの幅を少し広げて窮屈さを解消 */
+            flex: 0 0 320px !important;
             max-width: 320px !important;
         }
         .list-column {
@@ -29,13 +28,12 @@ customStyle.innerHTML = `
 
         .schedule-columns-container {
             flex-direction: row;
-            align-items: flex-start; /* 各列を上揃えにする */
+            align-items: flex-start;
         }
     }
 `;
 document.head.appendChild(customStyle);
 
-// グローバル変数として旅程データを保持（画面の即時反映のため）
 let scheduleData = [];
 
 const TEMPLATES = {
@@ -56,7 +54,6 @@ const TEMPLATES = {
         <div style="margin-bottom: 10px;">
             <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">観光する都市</label>
             <select id="dyn-tour-city" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                <!-- JavaScriptで動的に追加されます -->
             </select>
         </div>
         <div id="dyn-daytrip-area" style="display: none; margin-bottom: 10px;">
@@ -171,7 +168,6 @@ function updateDynamicForm() {
     }
 }
 
-// カレンダーの日付を前後させる処理
 function shiftDate(days) {
     const dateInput = document.getElementById('sched-date');
     if (!dateInput.value) return;
@@ -192,8 +188,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDynamicForm();
     }
 
-    document.getElementById('btn-prev-day').addEventListener('click', () => shiftDate(-1));
-    document.getElementById('btn-next-day').addEventListener('click', () => shiftDate(1));
+    const btnPrevDay = document.getElementById('btn-prev-day');
+    if (btnPrevDay) btnPrevDay.addEventListener('click', () => shiftDate(-1));
+    const btnNextDay = document.getElementById('btn-next-day');
+    if (btnNextDay) btnNextDay.addEventListener('click', () => shiftDate(1));
 
     const toggleBtn = document.getElementById('toggle-sched-form');
     if (toggleBtn) {
@@ -206,7 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 wrapper.style.display = 'none';
                 toggleBtn.innerText = '＋ 新しい予定を追加';
                 
-                // 閉じた時に編集モードを解除
                 document.getElementById('edit-schedule-id').value = '';
                 document.getElementById('btn-submit-sched').innerText = '予定を追加';
                 document.getElementById('schedule-form').reset();
@@ -218,23 +215,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function loadSchedule() {
     if (!APP_CONFIG.gasUrl) return;
-
     const listDiv = document.getElementById('schedule-list');
-    listDiv.innerHTML = '<p style="text-align: center; color: #666;">読み込み中...</p>';
 
+    // キャッシュを読み込んで瞬時に描画
+    const cached = localStorage.getItem('cache_schedule');
+    if (cached) {
+        scheduleData = JSON.parse(cached);
+        renderScheduleList();
+    } else {
+        listDiv.innerHTML = '<p style="text-align: center; color: #666;">読み込み中...</p>';
+    }
+
+    // 裏側で最新データを取得
     try {
         const response = await fetch(APP_CONFIG.gasUrl + "?sheet=旅程");
         const data = await response.json();
 
         if (data.error) {
-            listDiv.innerHTML = `<p style="color: red;">エラー: ${data.error}</p>`;
+            if (!cached) listDiv.innerHTML = `<p style="color: red;">エラー: ${data.error}</p>`;
             return;
         }
 
-        scheduleData = data; 
+        scheduleData = data;
+        localStorage.setItem('cache_schedule', JSON.stringify(data));
         renderScheduleList(); 
     } catch (error) {
-        listDiv.innerHTML = `<p style="color: red;">通信エラーが発生しました．</p>`;
+        if (!cached) listDiv.innerHTML = `<p style="color: red;">通信エラーが発生しました．</p>`;
     }
 }
 
@@ -461,7 +467,6 @@ function renderScheduleList() {
         `).join('');
     }
 
-    // 6日ごとにカラムを分割する処理
     let columnsHtml = '';
     for (let i = 0; i < dateBlocks.length; i += 6) {
         const chunk = dateBlocks.slice(i, i + 6);
@@ -472,7 +477,6 @@ function renderScheduleList() {
     listDiv.innerHTML = finalHtml;
 }
 
-// --- 編集ボタンを押した時の処理 ---
 window.editSchedule = function(id) {
     const target = scheduleData.find(item => item['ID'] === id);
     if (!target) return;
@@ -480,14 +484,12 @@ window.editSchedule = function(id) {
     document.getElementById('edit-schedule-id').value = id;
     document.getElementById('btn-submit-sched').innerText = "予定を更新";
 
-    // 日付のセット
     let dateStr = target['日付'];
     const d = new Date(dateStr);
     if (!isNaN(d.getTime())) {
         document.getElementById('sched-date').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
-    // カテゴリのセットとフォーム切り替え
     document.getElementById('sched-category').value = target['カテゴリ'];
     updateDynamicForm();
 
@@ -538,7 +540,8 @@ window.editSchedule = function(id) {
 
         document.getElementById('dyn-dep-time').value = depTime || '';
         document.getElementById('dyn-arr-time').value = arrTime || '';
-        document.getElementById('dyn-arr-nextday').checked = isNextDay;
+        const chkNextDay = document.getElementById('dyn-arr-nextday');
+        if (chkNextDay) chkNextDay.checked = isNextDay;
         
         document.getElementById('dyn-dep-loc').value = depLoc;
         document.getElementById('dyn-arr-loc').value = arrLoc;
@@ -563,7 +566,8 @@ window.editSchedule = function(id) {
 
     if (window.innerWidth <= 767) {
         document.getElementById('sched-form-wrapper').style.display = 'block';
-        document.getElementById('toggle-sched-form').innerText = '－ 入力フォームを閉じる';
+        const tBtn = document.getElementById('toggle-sched-form');
+        if (tBtn) tBtn.innerText = '－ 入力フォームを閉じる';
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 };
@@ -572,6 +576,7 @@ function deleteSchedule(id) {
     if (!confirm('この予定を削除してもよろしいですか？\n（日跨ぎの予定の場合、出発・到着の両方が連動して削除されます）')) return;
     
     scheduleData = scheduleData.filter(item => item['ID'] !== id);
+    localStorage.setItem('cache_schedule', JSON.stringify(scheduleData));
     renderScheduleList();
 
     if (!APP_CONFIG.gasUrl) return;
@@ -588,146 +593,152 @@ function deleteSchedule(id) {
     });
 }
 
-document.getElementById('schedule-form').addEventListener('submit', function(e) {
-    e.preventDefault(); 
-    
-    if (!APP_CONFIG.gasUrl) {
-        alert("設定タブからURLを登録してください．");
-        return;
-    }
-
-    const btn = document.getElementById('btn-submit-sched');
-    btn.disabled = true;
-
-    const category = document.getElementById('sched-category').value;
-    let finalTime = '';
-    let finalContent = '';
-    let depLoc = '';
-    let arrLoc = '';
-    let method = '';
-
-    if (category === "観光") {
-        const timeType = document.getElementById('dyn-time-type').value;
-        if (timeType === 'exact') {
-            finalTime = document.getElementById('dyn-time').value || '';
-        } else if (timeType === 'AM' || timeType === 'PM' || timeType === '終日') {
-            finalTime = timeType;
-        } else {
-            finalTime = ''; 
-        }
+const schedForm = document.getElementById('schedule-form');
+if (schedForm) {
+    schedForm.addEventListener('submit', function(e) {
+        e.preventDefault(); 
         
-        const tourCity = document.getElementById('dyn-tour-city').value;
-        if (tourCity === '日帰り') {
-            depLoc = '日帰り'; 
-            finalContent = document.getElementById('dyn-daytrip-city').value;
-            if(!finalContent) {
-                alert("日帰り先の都市名を入力してください．");
-                btn.disabled = false;
-                return;
+        if (!APP_CONFIG.gasUrl) {
+            alert("設定タブからURLを登録してください．");
+            return;
+        }
+
+        const btn = document.getElementById('btn-submit-sched');
+        btn.disabled = true;
+
+        const category = document.getElementById('sched-category').value;
+        let finalTime = '';
+        let finalContent = '';
+        let depLoc = '';
+        let arrLoc = '';
+        let method = '';
+
+        if (category === "観光") {
+            const timeType = document.getElementById('dyn-time-type').value;
+            if (timeType === 'exact') {
+                finalTime = document.getElementById('dyn-time').value || '';
+            } else if (timeType === 'AM' || timeType === 'PM' || timeType === '終日') {
+                finalTime = timeType;
+            } else {
+                finalTime = ''; 
             }
-        } else {
-            depLoc = tourCity; 
-            finalContent = tourCity;
-        }
-    } 
-    else if (category === "交通") {
-        const depTime = document.getElementById('dyn-dep-time').value || '未定';
-        const arrTimeBase = document.getElementById('dyn-arr-time').value || '未定';
-        const isNextDay = document.getElementById('dyn-arr-nextday') ? document.getElementById('dyn-arr-nextday').checked : false;
+            
+            const tourCity = document.getElementById('dyn-tour-city').value;
+            if (tourCity === '日帰り') {
+                depLoc = '日帰り'; 
+                finalContent = document.getElementById('dyn-daytrip-city').value;
+                if(!finalContent) {
+                    alert("日帰り先の都市名を入力してください．");
+                    btn.disabled = false;
+                    return;
+                }
+            } else {
+                depLoc = tourCity; 
+                finalContent = tourCity;
+            }
+        } 
+        else if (category === "交通") {
+            const depTime = document.getElementById('dyn-dep-time').value || '未定';
+            const arrTimeBase = document.getElementById('dyn-arr-time').value || '未定';
+            const chkNextDay = document.getElementById('dyn-arr-nextday');
+            const isNextDay = chkNextDay ? chkNextDay.checked : false;
 
-        let arrTime = arrTimeBase;
-        if (isNextDay && arrTimeBase !== '未定') {
-            arrTime = `翌${arrTimeBase}`;
+            let arrTime = arrTimeBase;
+            if (isNextDay && arrTimeBase !== '未定') {
+                arrTime = `翌${arrTimeBase}`;
+            }
+
+            if (depTime === '未定' && arrTime === '未定') {
+                finalTime = '';
+            } else {
+                finalTime = `${depTime} - ${arrTime}`;
+            }
+            
+            depLoc = document.getElementById('dyn-dep-loc').value || '';
+            arrLoc = document.getElementById('dyn-arr-loc').value || '';
+            
+            const baseMethod = document.getElementById('dyn-method').value;
+            const detailMethod = document.getElementById('dyn-method-detail').value.trim();
+            method = detailMethod ? `${baseMethod} (${detailMethod})` : baseMethod;
+        } 
+        else if (category === "宿泊") {
+            finalTime = '宿泊'; 
+            const city = document.getElementById('dyn-hotel').value;
+            finalContent = city.endsWith('泊') ? city : city + '泊';
         }
 
-        if (depTime === '未定' && arrTime === '未定') {
-            finalTime = '';
+        const inputDate = document.getElementById('sched-date').value;
+        localStorage.setItem('lastSchedDate', inputDate); 
+
+        const editId = document.getElementById('edit-schedule-id').value;
+        const newId = editId ? editId : 'sched_' + new Date().getTime();
+        const inputUrl = document.getElementById('sched-url').value;
+        const inputMemo = document.getElementById('sched-memo').value;
+        const inputUrlName = document.getElementById('sched-url-name').value;
+        
+        const newItem = {
+            'ID': newId,
+            '日付': inputDate,
+            'カテゴリ': category,
+            '時間': finalTime,
+            '場所・内容': finalContent,
+            '出発地': depLoc,
+            '到着地': arrLoc,
+            '移動手段': method,
+            '参考URL': inputUrl,
+            'メモ': inputMemo,
+            'URL名': inputUrlName
+        };
+        
+        if (editId) {
+            const index = scheduleData.findIndex(item => item['ID'] === editId);
+            if (index !== -1) scheduleData[index] = newItem;
         } else {
-            finalTime = `${depTime} - ${arrTime}`;
+            scheduleData.push(newItem);
         }
         
-        depLoc = document.getElementById('dyn-dep-loc').value || '';
-        arrLoc = document.getElementById('dyn-arr-loc').value || '';
+        localStorage.setItem('cache_schedule', JSON.stringify(scheduleData));
+        renderScheduleList();
+
+        document.getElementById('schedule-form').reset();
+        document.getElementById('edit-schedule-id').value = '';
+        document.getElementById('btn-submit-sched').innerText = '予定を追加';
+        updateDynamicForm();
+        document.getElementById('sched-date').value = localStorage.getItem('lastSchedDate');
         
-        const baseMethod = document.getElementById('dyn-method').value;
-        const detailMethod = document.getElementById('dyn-method-detail').value.trim();
-        method = detailMethod ? `${baseMethod} (${detailMethod})` : baseMethod;
-    } 
-    else if (category === "宿泊") {
-        finalTime = '宿泊'; 
-        const city = document.getElementById('dyn-hotel').value;
-        finalContent = city.endsWith('泊') ? city : city + '泊';
-    }
+        if (window.innerWidth <= 767) {
+            document.getElementById('sched-form-wrapper').style.display = 'none';
+            const tBtn = document.getElementById('toggle-sched-form');
+            if (tBtn) tBtn.innerText = '＋ 新しい予定を追加';
+        }
+        btn.disabled = false;
 
-    const inputDate = document.getElementById('sched-date').value;
-    localStorage.setItem('lastSchedDate', inputDate); 
+        const rowData = [
+            newId,
+            inputDate,
+            category,
+            finalTime,
+            finalContent,
+            depLoc,
+            arrLoc,
+            method,
+            inputUrl,
+            inputMemo,
+            inputUrlName
+        ];
 
-    const editId = document.getElementById('edit-schedule-id').value;
-    const newId = editId ? editId : 'sched_' + new Date().getTime();
-    const inputUrl = document.getElementById('sched-url').value;
-    const inputMemo = document.getElementById('sched-memo').value;
-    const inputUrlName = document.getElementById('sched-url-name').value;
-    
-    const newItem = {
-        'ID': newId,
-        '日付': inputDate,
-        'カテゴリ': category,
-        '時間': finalTime,
-        '場所・内容': finalContent,
-        '出発地': depLoc,
-        '到着地': arrLoc,
-        '移動手段': method,
-        '参考URL': inputUrl,
-        'メモ': inputMemo,
-        'URL名': inputUrlName
-    };
-    
-    if (editId) {
-        const index = scheduleData.findIndex(item => item['ID'] === editId);
-        if (index !== -1) scheduleData[index] = newItem;
-    } else {
-        scheduleData.push(newItem);
-    }
-    
-    renderScheduleList();
+        const action = editId ? 'update' : 'insert';
 
-    document.getElementById('schedule-form').reset();
-    document.getElementById('edit-schedule-id').value = '';
-    document.getElementById('btn-submit-sched').innerText = '予定を追加';
-    updateDynamicForm();
-    document.getElementById('sched-date').value = localStorage.getItem('lastSchedDate');
-    
-    if (window.innerWidth <= 767) {
-        document.getElementById('sched-form-wrapper').style.display = 'none';
-        document.getElementById('toggle-sched-form').innerText = '＋ 新しい予定を追加';
-    }
-    btn.disabled = false;
-
-    const rowData = [
-        newId,
-        inputDate,
-        category,
-        finalTime,
-        finalContent,
-        depLoc,
-        arrLoc,
-        method,
-        inputUrl,
-        inputMemo,
-        inputUrlName
-    ];
-
-    const action = editId ? 'update' : 'insert';
-
-    fetch(APP_CONFIG.gasUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-            sheet: '旅程',
-            action: action,
-            data: rowData
-        })
-    }).catch(error => {
-        alert('通信エラーが発生しました．データを再読み込みします．');
-        loadSchedule(); 
+        fetch(APP_CONFIG.gasUrl, {
+            method: 'POST',
+            body: JSON.stringify({
+                sheet: '旅程',
+                action: action,
+                data: rowData
+            })
+        }).catch(error => {
+            alert('通信エラーが発生しました．データを再読み込みします．');
+            loadSchedule(); 
+        });
     });
-});
+}

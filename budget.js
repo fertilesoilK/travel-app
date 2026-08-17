@@ -82,27 +82,32 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-document.querySelector(`[onclick="switchTab('budget', '予算')"]`).addEventListener('click', loadBudget);
-
 async function loadBudget() {
     if (!APP_CONFIG.gasUrl) return;
-
     const listDiv = document.getElementById('budget-list');
-    listDiv.innerHTML = '<p style="text-align: center; color: #666;">読み込み中...</p>';
+
+    const cached = localStorage.getItem('cache_budget');
+    if (cached) {
+        budgetData = JSON.parse(cached);
+        renderBudgetList();
+    } else {
+        listDiv.innerHTML = '<p style="text-align: center; color: #666;">読み込み中...</p>';
+    }
 
     try {
         const response = await fetch(APP_CONFIG.gasUrl + "?sheet=予算");
         const data = await response.json();
 
         if (data.error) {
-            listDiv.innerHTML = `<p style="color: red;">エラー: ${data.error}</p>`;
+            if (!cached) listDiv.innerHTML = `<p style="color: red;">エラー: ${data.error}</p>`;
             return;
         }
 
         budgetData = data; 
+        localStorage.setItem('cache_budget', JSON.stringify(data));
         renderBudgetList(); 
     } catch (error) {
-        listDiv.innerHTML = `<p style="color: red;">通信エラーが発生しました．</p>`;
+        if (!cached) listDiv.innerHTML = `<p style="color: red;">通信エラーが発生しました．</p>`;
     }
 }
 
@@ -202,6 +207,7 @@ window.deleteBudget = function(id) {
     if (!confirm('この予算項目を削除してもよろしいですか？')) return;
     
     budgetData = budgetData.filter(item => item['ID'] !== id);
+    localStorage.setItem('cache_budget', JSON.stringify(budgetData));
     renderBudgetList();
 
     if (!APP_CONFIG.gasUrl) return;
@@ -218,86 +224,91 @@ window.deleteBudget = function(id) {
     });
 }
 
-document.getElementById('budget-form').addEventListener('submit', function(e) {
-    e.preventDefault(); 
-    
-    if (!APP_CONFIG.gasUrl) {
-        alert("設定タブからURLを登録してください．");
-        return;
-    }
-
-    const btn = document.getElementById('btn-submit-bg');
-    btn.disabled = true;
-
-    const category = document.getElementById('bg-category').value;
-    let detail = document.getElementById('bg-detail').value.trim();
-    const type = document.getElementById('bg-type').value;
-    const currency = document.getElementById('bg-currency').value;
-    const amount = document.getElementById('bg-amount').value;
-    
-    const targetDays = type === '日額' ? document.getElementById('bg-target-days').value : '';
-
-    if (!detail) {
-        detail = category;
-    }
-
-    const newId = 'bg_' + new Date().getTime();
-    
-    const newItem = {
-        'ID': newId,
-        'カテゴリ': category,
-        '用途': detail,
-        '計算方法': type,
-        '通貨': currency,
-        '金額': amount,
-        '掛ける日数': targetDays
-    };
-    
-    budgetData.push(newItem);
-    renderBudgetList();
-
-    document.getElementById('budget-form').reset();
-    
-    if (window.innerWidth <= 767) {
-        document.getElementById('budget-form-wrapper').style.display = 'none';
-        document.getElementById('toggle-budget-form').innerText = '＋ 予算項目を追加';
-    }
-    btn.disabled = false;
-
-    const bgCategory = document.getElementById('bg-category');
-    const bgDetailLabel = document.getElementById('bg-detail-label');
-    const bgDetail = document.getElementById('bg-detail');
-    if (bgCategory && bgDetailLabel && bgDetail) {
-        if (bgCategory.value === '観光費' || bgCategory.value === '宿泊費' || bgCategory.value === '食費') {
-            bgDetail.required = false;
-            bgDetailLabel.innerText = '用途・詳細 (任意)';
-        } else {
-            bgDetail.required = true;
-            bgDetailLabel.innerText = '用途・詳細 (必須)';
+const bForm = document.getElementById('budget-form');
+if (bForm) {
+    bForm.addEventListener('submit', function(e) {
+        e.preventDefault(); 
+        
+        if (!APP_CONFIG.gasUrl) {
+            alert("設定タブからURLを登録してください．");
+            return;
         }
-    }
-    const bgDaysArea = document.getElementById('bg-days-area');
-    if(bgDaysArea) bgDaysArea.style.display = 'none';
 
-    const rowData = [
-        newId,
-        category,
-        detail,
-        type,
-        currency,
-        amount,
-        targetDays
-    ];
+        const btn = document.getElementById('btn-submit-bg');
+        btn.disabled = true;
 
-    fetch(APP_CONFIG.gasUrl, {
-        method: 'POST',
-        body: JSON.stringify({
-            sheet: '予算',
-            action: 'insert',
-            data: rowData
-        })
-    }).catch(error => {
-        alert('通信エラーが発生しました．');
-        loadBudget(); 
+        const category = document.getElementById('bg-category').value;
+        let detail = document.getElementById('bg-detail').value.trim();
+        const type = document.getElementById('bg-type').value;
+        const currency = document.getElementById('bg-currency').value;
+        const amount = document.getElementById('bg-amount').value;
+        
+        const targetDays = type === '日額' ? document.getElementById('bg-target-days').value : '';
+
+        if (!detail) {
+            detail = category;
+        }
+
+        const newId = 'bg_' + new Date().getTime();
+        
+        const newItem = {
+            'ID': newId,
+            'カテゴリ': category,
+            '用途': detail,
+            '計算方法': type,
+            '通貨': currency,
+            '金額': amount,
+            '掛ける日数': targetDays
+        };
+        
+        budgetData.push(newItem);
+        localStorage.setItem('cache_budget', JSON.stringify(budgetData));
+        renderBudgetList();
+
+        document.getElementById('budget-form').reset();
+        
+        if (window.innerWidth <= 767) {
+            document.getElementById('budget-form-wrapper').style.display = 'none';
+            const tBtn = document.getElementById('toggle-budget-form');
+            if (tBtn) tBtn.innerText = '＋ 予算項目を追加';
+        }
+        btn.disabled = false;
+
+        const bgCategory = document.getElementById('bg-category');
+        const bgDetailLabel = document.getElementById('bg-detail-label');
+        const bgDetail = document.getElementById('bg-detail');
+        if (bgCategory && bgDetailLabel && bgDetail) {
+            if (bgCategory.value === '観光費' || bgCategory.value === '宿泊費' || bgCategory.value === '食費') {
+                bgDetail.required = false;
+                bgDetailLabel.innerText = '用途・詳細 (任意)';
+            } else {
+                bgDetail.required = true;
+                bgDetailLabel.innerText = '用途・詳細 (必須)';
+            }
+        }
+        const bgDaysArea = document.getElementById('bg-days-area');
+        if(bgDaysArea) bgDaysArea.style.display = 'none';
+
+        const rowData = [
+            newId,
+            category,
+            detail,
+            type,
+            currency,
+            amount,
+            targetDays
+        ];
+
+        fetch(APP_CONFIG.gasUrl, {
+            method: 'POST',
+            body: JSON.stringify({
+                sheet: '予算',
+                action: 'insert',
+                data: rowData
+            })
+        }).catch(error => {
+            alert('通信エラーが発生しました．');
+            loadBudget(); 
+        });
     });
-});
+}

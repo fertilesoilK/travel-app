@@ -203,6 +203,12 @@ if (settingsForm) {
         };
         
         localStorage.setItem('trip_app_config', JSON.stringify(APP_CONFIG));
+        
+        // 設定を変更した際はキャッシュを破棄する
+        localStorage.removeItem('cache_schedule');
+        localStorage.removeItem('cache_budget');
+        localStorage.removeItem('cache_expense');
+        
         alert('設定を保存しました！画面を更新します．');
         location.reload();
     });
@@ -253,6 +259,11 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         localStorage.setItem('trip_app_config', JSON.stringify(APP_CONFIG));
         
+        // 共有URLで設定を上書きした際はキャッシュを破棄する
+        localStorage.removeItem('cache_schedule');
+        localStorage.removeItem('cache_budget');
+        localStorage.removeItem('cache_expense');
+        
         window.history.replaceState(null, '', window.location.pathname);
         alert('共有された設定を読み込みました！');
         location.reload();
@@ -286,7 +297,9 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    document.getElementById('set-trip-title').value = APP_CONFIG.tripTitle || "";
+    const setTripTitleEl = document.getElementById('set-trip-title');
+    if (setTripTitleEl) setTripTitleEl.value = APP_CONFIG.tripTitle || "";
+    
     const setUrlEl = document.getElementById('set-url');
     if (setUrlEl) setUrlEl.value = APP_CONFIG.gasUrl || "";
     
@@ -294,11 +307,20 @@ window.addEventListener('DOMContentLoaded', () => {
     if (m1Select) m1Select.value = APP_CONFIG.month1 || 1;
     if (m2Select) m2Select.value = APP_CONFIG.month2 || "";
     
-    document.getElementById('set-curr1-name').value = APP_CONFIG.curr1Name || "";
-    document.getElementById('set-rate-curr1').value = APP_CONFIG.curr1Rate || "";
-    document.getElementById('set-curr2-name').value = APP_CONFIG.curr2Name || "";
-    document.getElementById('set-rate-curr2').value = APP_CONFIG.curr2Rate || "";
-    document.getElementById('set-days').value = APP_CONFIG.baseDays || 15;
+    const curr1NameEl = document.getElementById('set-curr1-name');
+    if (curr1NameEl) curr1NameEl.value = APP_CONFIG.curr1Name || "";
+    
+    const rateCurr1El = document.getElementById('set-rate-curr1');
+    if (rateCurr1El) rateCurr1El.value = APP_CONFIG.curr1Rate || "";
+    
+    const curr2NameEl = document.getElementById('set-curr2-name');
+    if (curr2NameEl) curr2NameEl.value = APP_CONFIG.curr2Name || "";
+    
+    const rateCurr2El = document.getElementById('set-rate-curr2');
+    if (rateCurr2El) rateCurr2El.value = APP_CONFIG.curr2Rate || "";
+    
+    const setDaysEl = document.getElementById('set-days');
+    if (setDaysEl) setDaysEl.value = APP_CONFIG.baseDays || 15;
     
     if (membersContainer) {
         membersContainer.innerHTML = '';
@@ -325,7 +347,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const shareSection = document.getElementById('share-section');
         if (shareSection) shareSection.style.display = 'block';
         
+        // 起動時に全データを裏側で読み込み開始
         if (typeof loadSchedule === 'function') loadSchedule();
+        if (typeof loadBudget === 'function') loadBudget();
         if (typeof loadExpenses === 'function') loadExpenses();
         
         const headerTitle = APP_CONFIG.tripTitle ? APP_CONFIG.tripTitle + ' - 旅程' : '旅程';
