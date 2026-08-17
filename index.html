@@ -258,25 +258,21 @@
                 
                 <div style="margin-bottom: 15px; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px;">
                     <label style="display: block; font-weight: bold; margin-bottom: 8px; color: #0056b3;">予算・支出の基本設定（外貨・日数）</label>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
-                        <div style="flex: 1; min-width: 45%;">
-                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨1の名前</label>
-                            <input type="text" id="set-curr1-name" required placeholder="例: EUR" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                        </div>
-                        <div style="flex: 1; min-width: 45%;">
-                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨1のレート (1外貨=何円?)</label>
-                            <input type="number" id="set-rate-curr1" step="any" required placeholder="例: 165" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                        </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨1の名前 (例: EUR)</label>
+                        <input type="text" id="set-curr1-name" required placeholder="例: EUR" style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
-                        <div style="flex: 1; min-width: 45%;">
-                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨2の名前 (使わない場合は空欄)</label>
-                            <input type="text" id="set-curr2-name" placeholder="例: MAD" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                        </div>
-                        <div style="flex: 1; min-width: 45%;">
-                            <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨2のレート</label>
-                            <input type="number" id="set-rate-curr2" step="any" placeholder="例: 17.13" style="width: 100%; padding: 8px; box-sizing: border-box;">
-                        </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨1のレート (1外貨=何円?)</label>
+                        <input type="number" id="set-rate-curr1" step="any" required placeholder="例: 165" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨2の名前 (使わない場合は空欄)</label>
+                        <input type="text" id="set-curr2-name" placeholder="例: MAD" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                    </div>
+                    <div style="margin-bottom: 10px;">
+                        <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">外貨2のレート</label>
+                        <input type="number" id="set-rate-curr2" step="any" placeholder="例: 17.13" style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.9em; margin-bottom: 3px;">旅行日数 (基準となる日数)</label>
